@@ -5,14 +5,14 @@
   elements:
   - title: GB Processed
     name: GB Processed
-    model: bigquery_performance_monitoring
-    explore: jobs_by_organization_raw
+    model: bigquery_performance_monitoring_by_project
+    explore: jobs_by_project_raw
     type: single_value
-    fields: [jobs_by_organization_raw.total_gb_processed, jobs_by_organization_raw__job_stages.total_shuffle_output_gibibytes_spilled]
-    sorts: [jobs_by_organization_raw.total_gb_processed desc]
+    fields: [jobs_by_project_raw.total_gb_processed, jobs_by_project_raw__job_stages.total_shuffle_output_gibibytes_spilled]
+    sorts: [jobs_by_project_raw.total_gb_processed desc]
     limit: 500
     dynamic_fields: [{table_calculation: percent_of_gb_shuffled, label: Percent of
-          GB Shuffled, expression: "${jobs_by_organization_raw__job_stages.total_shuffle_output_gibibytes_spilled}/${jobs_by_organization_raw.total_gb_processed}",
+          GB Shuffled, expression: "${jobs_by_project_raw__job_stages.total_shuffle_output_gibibytes_spilled}/${jobs_by_project_raw.total_gb_processed}",
         value_format: !!null '', value_format_name: percent_2, _kind_hint: measure,
         _type_hint: number}]
     query_timezone: America/Los_Angeles
@@ -58,21 +58,18 @@
     interpolation: linear
     defaults_version: 1
     series_types: {}
-    hidden_fields: [jobs_by_organization_raw__job_stages.total_shuffle_output_gibibytes_spilled]
-    listen:
-      Reporting Period: jobs_by_organization_raw.creation_date
-      Project ID: jobs_by_organization_raw.project_id
+    hidden_fields: [jobs_by_project_raw__job_stages.total_shuffle_output_gibibytes_spilled]
     row: 2
     col: 0
     width: 11
     height: 4
   - title: New Tile
     name: New Tile
-    model: bigquery_performance_monitoring
-    explore: jobs_by_organization_raw
+    model: bigquery_performance_monitoring_by_project
+    explore: jobs_by_project_raw
     type: single_value
-    fields: [jobs_by_organization_raw.count_cached_queries, jobs_by_organization_raw.percent_of_queries_cached]
-    sorts: [jobs_by_organization_raw.count_cached_queries desc]
+    fields: [jobs_by_project_raw.count_cached_queries, jobs_by_project_raw.percent_of_queries_cached]
+    sorts: [jobs_by_project_raw.count_cached_queries desc]
     limit: 500
     query_timezone: America/Los_Angeles
     custom_color_enabled: true
@@ -116,9 +113,6 @@
     interpolation: linear
     defaults_version: 1
     series_types: {}
-    listen:
-      Reporting Period: jobs_by_organization_raw.creation_date
-      Project ID: jobs_by_organization_raw.project_id
     row: 2
     col: 13
     width: 11
@@ -134,15 +128,15 @@
     height: 2
   - title: Slots Used by Project
     name: Slots Used by Project
-    model: bigquery_performance_monitoring
-    explore: jobs_timeline_by_organization
+    model: bigquery_performance_monitoring_by_project
+    explore: jobs_timeline_by_project
     type: looker_area
-    fields: [jobs_timeline_by_organization.period_start_minute5, jobs_timeline_by_organization.total_slot_5minutes,
-      jobs_timeline_by_organization.project_id]
-    pivots: [jobs_timeline_by_organization.project_id]
-    fill_fields: [jobs_timeline_by_organization.period_start_minute5]
+    fields: [jobs_timeline_by_project.period_start_minute5, jobs_timeline_by_project.total_slot_5minutes,
+      jobs_timeline_by_project.project_id]
+    pivots: [jobs_timeline_by_project.project_id]
+    fill_fields: [jobs_timeline_by_project.period_start_minute5]
     filters: {}
-    sorts: [jobs_timeline_by_organization.period_start_minute5 desc, jobs_timeline_by_organization.project_id]
+    sorts: [jobs_timeline_by_project.period_start_minute5 desc, jobs_timeline_by_project.project_id]
     limit: 500
     query_timezone: America/Los_Angeles
     x_axis_gridlines: false
@@ -174,16 +168,13 @@
     totals_color: "#808080"
     series_types: {}
     defaults_version: 1
-    listen:
-      Reporting Period: jobs_timeline_by_organization.job_creation_time_date
-      Project ID: jobs_timeline_by_organization.project_id
     row: 13
     col: 0
     width: 24
     height: 6
   - title: Query Concurrency
     name: Query Concurrency
-    model: bigquery_performance_monitoring
+    model: bigquery_performance_monitoring_by_project
     explore: concurrency_per_second
     type: looker_line
     fields: [concurrency_per_second.timestamp_minute5, concurrency_per_second.avg_running,
@@ -218,15 +209,13 @@
     show_null_points: true
     interpolation: linear
     defaults_version: 1
-    listen:
-      Project ID: concurrency_per_second.project_id
     row: 19
     col: 0
     width: 24
     height: 7
   - name: Slots vs Commitments
     title: Slots vs Commitments
-    model: bigquery_performance_monitoring
+    model: bigquery_performance_monitoring_by_project
     explore: timeline_with_commits
     type: looker_line
     fields: [timeline_with_commits.period_start_minute5, timeline_with_commits.total_slot_5minutes,
@@ -291,13 +280,3 @@
     ui_config:
       type: advanced
       display: popover
-  - name: Project ID
-    title: Project ID
-    type: field_filter
-    default_value: ''
-    allow_multiple_values: true
-    required: false
-    model: bigquery_performance_monitoring
-    explore: jobs_timeline_by_organization
-    listens_to_filters: []
-    field: jobs_timeline_by_organization.project_id

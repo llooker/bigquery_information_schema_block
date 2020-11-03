@@ -5,7 +5,7 @@ view: commit_facts {
         IF(commitment_plan != 'MONTHLY', 0, IF(action IN ('UPDATE', 'CREATE'), slot_count, slot_count * -1)) as monthly_change,
         IF(commitment_plan != 'ANNUAL', 0, IF(action IN ('UPDATE', 'CREATE'), slot_count, slot_count * -1)) as annual_change,
         LEAD(change_timestamp, 1) OVER(ORDER BY change_timestamp ASC) next_change_timestamp
-      FROM `bq-admin-buzzfeed.region-us.INFORMATION_SCHEMA.CAPACITY_COMMITMENT_CHANGES_BY_PROJECT` WHERE state = 'ACTIVE'),
+      FROM `BILLING_PROJECT_ID.INFORMATION_SCHEMA.CAPACITY_COMMITMENT_CHANGES_BY_PROJECT` WHERE state = 'ACTIVE'),
       minutes AS (SELECT TIMESTAMP_TRUNC(timestamp, MINUTE) timestamp, FROM (SELECT GENERATE_TIMESTAMP_ARRAY(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY), CURRENT_TIMESTAMP(), INTERVAL 1 MINUTE) timestamps), UNNEST(timestamps) timestamp
       order by timestamp desc)
 

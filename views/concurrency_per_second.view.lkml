@@ -3,7 +3,7 @@ view: concurrency_per_second {
     sql: WITH seconds as (
           SELECT TIMESTAMP_TRUNC(timestamp, SECOND) timestamp, FROM (SELECT GENERATE_TIMESTAMP_ARRAY(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 DAY), CURRENT_TIMESTAMP(), INTERVAL 1 SECOND) timestamps), UNNEST(timestamps) timestamp
       ), filtered_jobs_timeline as (
-      SELECT * from `region-us.INFORMATION_SCHEMA`.JOBS_TIMELINE_BY_ORGANIZATION f
+      SELECT * from `region-us.INFORMATION_SCHEMA`.JOBS_TIMELINE_BY_PROJECT f
       WHERE f.job_creation_time BETWEEN TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY) AND CURRENT_TIMESTAMP()
       )
           SELECT

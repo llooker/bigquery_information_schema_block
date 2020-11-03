@@ -1,7 +1,7 @@
-view: jobs_by_organization_raw {
+view: jobs_by_project_raw {
   derived_table: {
     sql: SELECT *
-      from `region-us.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION`
+      from `region-us.INFORMATION_SCHEMA.JOBS_BY_PROJECT`
  ;;
   }
 
@@ -61,8 +61,8 @@ view: jobs_by_organization_raw {
         ELSE NULL
         END
        ;;
-      label: "6 Hour Period"
-      group_label: "Reporting Periods"
+    label: "6 Hour Period"
+    group_label: "Reporting Periods"
   }
 
 
@@ -80,25 +80,25 @@ view: jobs_by_organization_raw {
     group_label: "Reporting Periods"
   }
 
- parameter: reporting_period_parameter {
+  parameter: reporting_period_parameter {
 
-  type: unquoted
-  allowed_value: {
-    label: "One Hour Reporting Period"
-    value: "1"
+    type: unquoted
+    allowed_value: {
+      label: "One Hour Reporting Period"
+      value: "1"
+    }
+    allowed_value: {
+      label: "3 Hour Reporting Period"
+      value: "3"
+    }
+    allowed_value: {
+      label: "6 Hour Reporting Period"
+      value: "6"
+    }
   }
-  allowed_value: {
-    label: "3 Hour Reporting Period"
-    value: "3"
-  }
-  allowed_value: {
-    label: "6 Hour Reporting Period"
-    value: "6"
-  }
-}
 
-dimension: reporting_period {
-  sql:
+  dimension: reporting_period {
+    sql:
     {% if reporting_period_parameter._parameter_value == '1' %}
       ${one_hour_reporting_periods}
     {% elsif reporting_period_parameter._parameter_value == '3' %}
@@ -110,7 +110,7 @@ dimension: reporting_period {
     {% endif %};;
     label: "Dynamic Reporting Period"
     group_label: "Reporting Periods"
-}
+  }
 
   dimension: project_id {
     type: string
@@ -340,7 +340,7 @@ dimension: reporting_period {
     sql: IF(${total_bytes_processed} < 10.0 * (1024*1024),
       (10.0 * 1024 * 1024) * ARRAY_LENGTH(${referenced_tables}) / (1024*1024*1024),
       ${total_bytes_processed} / (1024*1024*1024))  ;;
-      value_format_name: decimal_2
+    value_format_name: decimal_2
   }
 
   dimension: total_estimated_bytes_billed {
@@ -383,14 +383,14 @@ dimension: reporting_period {
     type:  sum
     value_format_name: usd
     sql: CASE
-    WHEN statement_type = 'CREATE_MODEL' THEN ROUND(${total_estimated_bytes_billed} / POW(2, 40)  * CAST(250.00 AS NUMERIC), 2)
-    WHEN statement_type IN ('DELETE',
-    'SELECT',
-    'CREATE_TABLE_AS_SELECT',
-    'INSERT',
-    'MERGE') THEN ROUND(${total_estimated_bytes_billed} / POW(2, 40) * CAST(5.00 AS NUMERIC), 2)
-    WHEN statement_type IS NULL THEN 0
-  END ;;
+          WHEN statement_type = 'CREATE_MODEL' THEN ROUND(${total_estimated_bytes_billed} / POW(2, 40)  * CAST(250.00 AS NUMERIC), 2)
+          WHEN statement_type IN ('DELETE',
+          'SELECT',
+          'CREATE_TABLE_AS_SELECT',
+          'INSERT',
+          'MERGE') THEN ROUND(${total_estimated_bytes_billed} / POW(2, 40) * CAST(5.00 AS NUMERIC), 2)
+          WHEN statement_type IS NULL THEN 0
+        END ;;
   }
 
   measure: total_queries_ran {
@@ -473,9 +473,9 @@ dimension: reporting_period {
 
 view: project_gb_rank_ndt {
   derived_table: {
-    explore_source: jobs_by_organization_raw_all_queries {
-      column: project_id {field: jobs_by_organization_raw_all_queries.project_id}
-      column: total_gb_processed {field: jobs_by_organization_raw_all_queries.total_gb_processed}
+    explore_source: jobs_by_project_raw_all_queries {
+      column: project_id {field: jobs_by_project_raw_all_queries.project_id}
+      column: total_gb_processed {field: jobs_by_project_raw_all_queries.total_gb_processed}
       derived_column: rank {sql: RANK() OVER (ORDER BY total_gb_processed DESC) ;;}
       bind_all_filters: yes
       sorts: [total_gb_processed: desc]
@@ -492,7 +492,7 @@ view: project_gb_rank_ndt {
   }
 }
 
-view: jobs_by_organization_raw__labels {
+view: jobs_by_project_raw__labels {
 
   dimension: labels {
     type: string
@@ -500,7 +500,7 @@ view: jobs_by_organization_raw__labels {
   }
 }
 
-view: jobs_by_organization_raw__timeline {
+view: jobs_by_project_raw__timeline {
   dimension: elapsed_ms {
     type: number
     sql: ${TABLE}.elapsed_ms ;;
@@ -537,7 +537,7 @@ view: jobs_by_organization_raw__timeline {
   }
 }
 
-view: jobs_by_organization_raw__job_stages {
+view: jobs_by_project_raw__job_stages {
 
   dimension: name {
     type: string
@@ -760,7 +760,7 @@ view: jobs_by_organization_raw__job_stages {
 #   }
 }
 
-view: jobs_by_organization_raw__referenced_tables {
+view: jobs_by_project_raw__referenced_tables {
 
   dimension: referenced_project_id {
     type: string
@@ -781,7 +781,7 @@ view: jobs_by_organization_raw__referenced_tables {
   }
 }
 
-view: jobs_by_organization_raw__job_stages__input_stages {
+view: jobs_by_project_raw__job_stages__input_stages {
 
   dimension: input_stages {
     type: string
@@ -789,7 +789,7 @@ view: jobs_by_organization_raw__job_stages__input_stages {
   }
 }
 
-view: jobs_by_organization_raw__job_stages__steps {
+view: jobs_by_project_raw__job_stages__steps {
 
   dimension: steps {
     hidden: yes
@@ -809,7 +809,7 @@ view: jobs_by_organization_raw__job_stages__steps {
   }
 }
 
-view: jobs_by_organization_raw__job_stages__steps__substeps  {
+view: jobs_by_project_raw__job_stages__steps__substeps  {
 
   dimension: substeps {
     type: string
@@ -821,9 +821,9 @@ view: jobs_by_organization_raw__job_stages__steps__substeps  {
 
 view: referenced_datasets_ndt {
   derived_table: {
-    explore_source: jobs_by_organization_raw {
-      column: referenced_dataset {field: jobs_by_organization_raw__referenced_tables.referenced_dataset_id}
-      column: total_jobs {field: jobs_by_organization_raw.count_of_jobs}
+    explore_source: jobs_by_project_raw {
+      column: referenced_dataset {field: jobs_by_project_raw__referenced_tables.referenced_dataset_id}
+      column: total_jobs {field: jobs_by_project_raw.count_of_jobs}
       derived_column: rank {sql: RANK() OVER (ORDER BY total_jobs DESC) ;;}
       bind_all_filters: yes
       sorts: [total_jobs: desc]

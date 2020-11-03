@@ -1,6 +1,6 @@
-view: jobs_timeline_by_organization {
-    sql_table_name: `region-us.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_ORGANIZATION`
-       ;;
+view: jobs_timeline_by_project {
+  sql_table_name: `region-us.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_PROJECT`
+    ;;
 
 
 #### This is the table used for real-time analysis ######
@@ -32,7 +32,7 @@ view: jobs_timeline_by_organization {
       hour_of_day
     ]
     sql: ${TABLE}.period_start ;;
-    }
+  }
 
   dimension: period_slot_ms {
     type: number
