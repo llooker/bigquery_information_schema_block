@@ -1,7 +1,7 @@
 ############## BigQuery Performance Monitoring Model #########################
 
 ############## Add the BigQuery Connection that you would like to monitor ######################
-connection: "buzzfeed-bigquery"
+connection: "CONNECTION_NAME"
 include: "/**/*.dashboard"
 include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
 
