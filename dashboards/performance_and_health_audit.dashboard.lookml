@@ -1,7 +1,7 @@
 - dashboard: performance_and_health_audit
   title: Performance and Health Audit
   layout: newspaper
-  preferred_viewer: dashboards
+  #preferred_viewer: dashboards
   elements:
   - title: Average Slot Utilization by Hour of Day and Day of Week
     name: Average Slot Utilization by Hour of Day and Day of Week
@@ -535,6 +535,6 @@
     default_value: 6 hours
     allow_multiple_values: true
     required: false
-    ui_config:
-      type: advanced
-      display: popover
+    # ui_config:
+    #   type: advanced
+    #   display: popover

@@ -1,7 +1,7 @@
 - dashboard: time_window_investigation
   title: Time Window Investigation
   layout: newspaper
-  preferred_viewer: dashboards
+  #preferred_viewer: dashboards
   elements:
   - title: GB Processed
     name: GB Processed
@@ -277,6 +277,6 @@
     default_value: 6 hours
     allow_multiple_values: true
     required: false
-    ui_config:
-      type: advanced
-      display: popover
+    # ui_config:
+    #   type: advanced
+    #   display: popover

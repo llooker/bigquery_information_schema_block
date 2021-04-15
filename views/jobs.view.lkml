@@ -1,19 +1,34 @@
 view: jobs_by_project_raw {
-  derived_table: {
-    sql: SELECT *
-      from `region-us.INFORMATION_SCHEMA.JOBS_BY_PROJECT`
- ;;
+  # Temporary alias until refactor done
+  extends: [jobs_in_project]
+}
+
+view: jobs {
+  extends: [jobs_base]
+  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_@{scope}` ;;
+}
+view: jobs_in_project {
+  extends: [jobs_base]
+  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_PROJECT` ;;
+}
+
+view: jobs_in_organization{
+  extends: [jobs_base]
+  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION` ;;
+}
+
+view: jobs_base {
+  # This is the main Information Schema table - with one row per job executed
+
+  extension: required
+
+  dimension: creation_timestamp_filter {
+    # This is the partition column
+    type: date_time
+    sql: {% condition %} ${TABLE}.creation_time {% endcondition %};;
+
   }
-
-##### This is the main Information Schema table - with one row per job executed #####################
-
-  measure: count_of_jobs {
-    type: count
-    drill_fields: [detail*]
-  }
-
-
-#### This is the partition field for the Jobs table #####
+  # This is the partition column
   dimension_group: creation {
     type: time
     timeframes: [
@@ -284,7 +299,7 @@ view: jobs_by_project_raw {
 
   dimension: referenced_tables {
     hidden: yes
-    type: string
+    type: string # Actually a nested struct
     sql: ${TABLE}.referenced_tables ;;
   }
 
@@ -296,13 +311,13 @@ view: jobs_by_project_raw {
 
   dimension: timeline {
     hidden: yes
-    type: string
+    type: string # Actually a nested struct
     sql: ${TABLE}.timeline ;;
   }
 
   dimension: job_stages {
     hidden: yes
-    type: string
+    type: string  # Actually a nested struct
     sql: ${TABLE}.job_stages ;;
   }
 
@@ -451,6 +466,12 @@ view: jobs_by_project_raw {
     value_format_name: decimal_2
   }
 
+  measure: count_of_jobs {
+    type: count
+    filters: [job_id: "-NULL"]
+    drill_fields: [detail*]
+  }
+
   set: detail {
     fields: [
       creation_time,
@@ -500,286 +521,6 @@ view: jobs_by_project_raw__labels {
   }
 }
 
-view: jobs_by_project_raw__timeline {
-  dimension: elapsed_ms {
-    type: number
-    sql: ${TABLE}.elapsed_ms ;;
-  }
-
-  dimension: total_slot_ms {
-    type: number
-    sql: ${TABLE}.total_slot_ms ;;
-  }
-
-  dimension: query_total_slot {
-    type: number
-    sql: ${total_slot_ms}/${elapsed_ms} ;;
-  }
-
-  measure: total_query_slot {
-    type: sum
-    sql: ${query_total_slot} ;;
-  }
-
-  dimension: pending_units {
-    hidden: yes
-    type: number
-    sql: ${TABLE}.pending_units ;;
-  }
-
-  dimension: completed_units {
-    type: number
-    sql: ${TABLE}.completed_units ;;
-  }
-  dimension: active_units {
-    type: number
-    sql: ${TABLE}.active_units ;;
-  }
-}
-
-view: jobs_by_project_raw__job_stages {
-
-  dimension: name {
-    type: string
-    sql: ${TABLE}.name ;;
-  }
-
-  dimension: stage_name {
-    type: string
-    sql: SUBSTR(${name},5,LENGTH(${name})) ;;
-  }
-
-  dimension: id {
-    type: number
-    sql: ${TABLE}.id ;;
-  }
-
-  dimension: start_ms {
-    type: number
-    sql: ${TABLE}.start_ms ;;
-  }
-
-  dimension: end_ms {
-    type: number
-    sql: ${TABLE}.end_ms ;;
-  }
-
-  dimension: input_stages {
-    hidden: yes
-    type: number
-    sql: ${TABLE}.input_stages ;;
-  }
-
-  dimension: wait_ratio_avg {
-    type: number
-    sql: ${TABLE}.wait_ratio_avg ;;
-  }
-
-  dimension: wait_ms_avg {
-    type: number
-    sql: ${TABLE}.wait_ms_avg ;;
-  }
-
-  dimension: wait_ratio_max {
-    type: number
-    sql: ${TABLE}.wait_ratio_max ;;
-  }
-
-  dimension: wait_ms_max {
-    type: number
-    sql: ${TABLE}.wait_ms_max ;;
-  }
-
-  dimension: read_ratio_avg {
-    type: number
-    sql: ${TABLE}.read_ratio_avg ;;
-  }
-
-  dimension: read_ms_avg {
-    type: number
-    sql: ${TABLE}.read_ms_avg ;;
-  }
-
-  dimension: read_ratio_max {
-    type: number
-    sql: ${TABLE}.read_ratio_max ;;
-  }
-
-  dimension: read_ms_max {
-    type: number
-    sql: ${TABLE}.read_ms_max ;;
-  }
-
-  dimension: compute_ratio_avg {
-    type: number
-    sql: ${TABLE}.compute_ratio_avg ;;
-  }
-
-  dimension: compute_ms_avg {
-    type: number
-    sql: ${TABLE}.compute_ms_avg ;;
-  }
-
-  dimension: compute_ratio_max {
-    type: number
-    sql: ${TABLE}.compute_ratio_max ;;
-  }
-
-  dimension: compute_ms_max {
-    type: number
-    sql: ${TABLE}.compute_ms_max ;;
-  }
-
-  dimension: write_ratio_avg {
-    type: number
-    sql: ${TABLE}.write_ratio_avg ;;
-  }
-
-  dimension: write_ms_avg {
-    type: number
-    sql: ${TABLE}.write_ms_avg ;;
-  }
-
-  dimension: write_ratio_max {
-    type: number
-    sql: ${TABLE}.write_ratio_max ;;
-  }
-
-  dimension: write_ms_max {
-    type: number
-    sql: ${TABLE}.write_ms_max ;;
-  }
-
-  dimension: shuffle_output_bytes {
-    type: number
-    sql: ${TABLE}.shuffle_output_bytes ;;
-  }
-
-  measure: total_shuffle_output_bytes {
-    type: sum
-    sql: ${shuffle_output_bytes} ;;
-  }
-
-  dimension: shuffle_output_bytes_spilled {
-    type: number
-    sql: ${TABLE}.shuffle_output_bytes_spilled ;;
-  }
-
-  measure: total_shuffle_output_bytes_spilled {
-    type: sum
-    sql: ${shuffle_output_bytes_spilled} ;;
-  }
-
-  measure: total_shuffle_output_gibibytes_spilled {
-    type: sum
-    label: "Shuffle GB Spilled"
-    sql: ${shuffle_output_bytes_spilled} / (1024*1024*1024) ;;
-    value_format_name: decimal_2
-  }
-
-  dimension: records_read {
-    type: number
-    sql: ${TABLE}.records_read ;;
-  }
-
-  dimension: records_written {
-    type: number
-    sql: ${TABLE}.records_written ;;
-  }
-
-  dimension: parallel_inputs {
-    type: number
-    sql: ${TABLE}.parallel_inputs ;;
-  }
-
-  dimension: completed_parallel_inputs {
-    type: number
-    sql: ${TABLE}.completed_parallel_inputs ;;
-  }
-
-  dimension: status {
-    type: string
-    sql: ${TABLE}.status ;;
-  }
-
-  dimension: steps {
-    type: string
-    hidden: yes
-    sql: ${TABLE}.steps ;;
-  }
-
-  dimension: slot_ms {
-    type: number
-    sql: ${TABLE}.slot_ms ;;
-  }
-
-  measure: total_shuffles {
-    type: sum
-    sql: ${shuffle_output_bytes} ;;
-    value_format_name: decimal_2
-  }
-
-  measure: total_slot_ms {
-    type: sum
-    sql: ${slot_ms} ;;
-  }
-
-#   set: detail {
-#     fields: [
-#       name,
-#       id,
-#       start_ms,
-#       end_ms,
-#       input_stages,
-#       wait_ratio_avg,
-#       wait_ms_avg,
-#       wait_ratio_max,
-#       wait_ms_max,
-#       read_ratio_avg,
-#       read_ms_avg,
-#       read_ratio_max,
-#       read_ms_max,
-#       compute_ratio_avg,
-#       compute_ms_avg,
-#       compute_ratio_max,
-#       compute_ms_max,
-#       write_ratio_avg,
-#       write_ms_avg,
-#       write_ratio_max,
-#       write_ms_max,
-#       shuffle_output_bytes,
-#       shuffle_output_bytes_spilled,
-#       records_read,
-#       records_written,
-#       parallel_inputs,
-#       completed_parallel_inputs,
-#       status,
-#       steps,
-#       slot_ms
-#     ]
-#   }
-}
-
-view: jobs_by_project_raw__referenced_tables {
-
-  dimension: referenced_project_id {
-    type: string
-    full_suggestions: yes
-    sql: ${TABLE}.project_id ;;
-  }
-
-  dimension: referenced_dataset_id {
-    type: string
-    full_suggestions: yes
-    sql: ${TABLE}.dataset_id ;;
-  }
-
-  dimension: referenced_table_id {
-    type: string
-    full_suggestions: yes
-    sql: ${TABLE}.table_id ;;
-  }
-}
 
 view: jobs_by_project_raw__job_stages__input_stages {
 
