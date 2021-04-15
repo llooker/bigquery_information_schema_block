@@ -8,11 +8,10 @@ include: "/views/tables.view.lkml"
 include: "/views/columns.view.lkml"
 
 view: job_join_paths {
-  derived_table: {
-    sql_trigger_value: SELECT 1 ;;
-    sql: SELECT 1 as path UNION ALL SELECT 2 UNION ALL SELECT 3 ;;
+  dimension: _alias {
+    hidden: yes
+    sql:${TABLE};;
   }
-  dimension: path {type:number hidden:yes}
 }
 
 explore: query_jobs {
@@ -31,16 +30,17 @@ explore: query_jobs {
   }
 
   join: job_join_paths {
-    relationship: one_to_many # In case we need measures from query jobs and want to use sym aggs rather than dim/msr-splitting the fields
+    relationship: many_to_one # In case we need measures from query jobs and want to use sym aggs rather than dim/msr-splitting the fields
     type: left_outer
+    sql_table_name: UNNEST([1,2,3]) ;;
     sql_on:
     0=1
     {% if job_referenced_tables._in_query
-       %} OR ${job_join_paths.path} = 1 {%endif%}
+       %} OR ${job_join_paths._alias} = 1 {%endif%}
     {% if job_timeline_entries._in_query
-       %} OR ${job_join_paths.path} = 2 {%endif%}
+       %} OR ${job_join_paths._alias} = 2 {%endif%}
     {% if job_stages._in_query
-       %} OR ${job_join_paths.path} = 3 {%endif%}
+       %} OR ${job_join_paths._alias} = 3 {%endif%}
     ;;
   }
 
@@ -48,7 +48,7 @@ explore: query_jobs {
     view_label: "Job > Tables"
     relationship: one_to_one
     type: left_outer
-    sql_on: ${job_join_paths.path} = 1 ;;
+    sql_on: ${job_join_paths._alias} = 1 ;;
   }
 
   join: tables {
@@ -84,14 +84,14 @@ explore: query_jobs {
     view_label: "Job > Timeline"
     relationship: one_to_one
     type: left_outer
-    sql_on: ${job_join_paths.path} = 2 ;;
+    sql_on: ${job_join_paths._alias} = 2 ;;
   }
 
   join: job_stages {
     view_label: "Job > Stages"
     relationship: one_to_one
     type: left_outer
-    sql_on: ${job_join_paths.path} = 3 ;;
+    sql_on: ${job_join_paths._alias} = 3 ;;
   }
 
 #   join: jobs_by_project_raw__job_stages__input_stages {
