@@ -1,13 +1,18 @@
 ############## BigQuery Performance Monitoring Model #########################
 
 ############## Add the BigQuery Connection that you would like to monitor ######################
-connection: "looker-private-demo"
+connection: "@{connection}"
 
 # Temporarily commented out dashboards for validation, fix them at the end once model changes are done
 # include: "/**/*.dashboard"
 include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
 
-include: "/explores/query_jobs.explore.lkml"
+include: "/explores/all.explore.lkml"
+
+include: "/explores/jobs.explore.lkml"
+include: "/explores/job_slot_concurrency.explore.lkml"
+include: "/explores/assignments.explore.lkml"
+include: "/explores/capacity_commitments.explore.lkml"
 
 
 explore: commit_facts {}

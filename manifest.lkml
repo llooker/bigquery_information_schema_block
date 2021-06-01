@@ -3,6 +3,11 @@
 # Name before starting refactoring... is it important?
 #project_name: "performance_monitoring_by_project"
 
+constant: connection {
+  # Enter the name of the Looker connection to use
+  value: "zombies_run"
+}
+
 constant: region {
   # E.g. us
   value: "us"

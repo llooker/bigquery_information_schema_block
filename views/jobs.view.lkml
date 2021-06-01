@@ -234,13 +234,14 @@ view: jobs_base {
 
 ##### The Query Text field was removed from the Jobs by Organization Table #####
 
-  # dimension: query {
-  #   type: string
-  #   sql: ${TABLE}.query ;;
-  #   html:
-  #   <div style="white-space: normal;">{{rendered_value}}
-  #   </div> ;;
-  # }
+  dimension: query_text {
+    type: string
+    sql:{% if "@{scope}" == "ORGANIZATION"%} "Query text unavailable at ORGANIZATION scope " {%
+      else %} ${TABLE}.query {% endif %};;
+    html:
+    <div style="white-space: normal;">{{rendered_value}}
+    </div> ;;
+  }
 
   dimension: state {
     type: string

@@ -1,22 +1,8 @@
 include: "/views/date.view"
+include: "/views/date_fill.view"
 include: "/views/jobs.view"
 
-explore: job_slots_datepart_summaries {
-  always_filter: {
-    filters: [date.date_filter: "1 day ago for 1 day"]
-  }
-  join: date {
-    type: cross
-    relationship: many_to_one
-    sql_table_name: UNNEST([COALESCE(
-      job_slots_datepart_summaries.slot_activity_period
-      )]);;
-    required_joins: []
-  }
-}
-
-
-view: job_slots_datepart_summaries {
+view: job_slot_concurrency {
   derived_table: {
     sql:
     WITH job_stages as (
@@ -36,7 +22,7 @@ view: job_slots_datepart_summaries {
       -- New entities each month
       SELECT start_ts as ts, +slots as slots_delta, 0 as is_selection_period FROM job_stages UNION ALL
       SELECT   end_ts as ts, -slots as slots_delta, 0 as is_selection_period FROM job_stages UNION ALL
-      SELECT        d as ts, 0      as slots_delta, 1 as is_selection_period FROM ${date.SQL_TABLE_NAME}
+      SELECT        d as ts, 0      as slots_delta, 1 as is_selection_period FROM ${date_fill.SQL_TABLE_NAME}
       ),
     slot_states as (
       SELECT

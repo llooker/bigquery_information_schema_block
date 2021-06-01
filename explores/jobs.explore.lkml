@@ -6,6 +6,7 @@ include: "/views/job_stages.view.lkml"
 
 include: "/views/tables.view.lkml"
 include: "/views/columns.view.lkml"
+include: "/views/reservations/reservations.view.lkml"
 
 view: job_join_paths {
   dimension: _alias {
@@ -15,12 +16,17 @@ view: job_join_paths {
 }
 
 explore: query_jobs {
+  extends: [jobs]
   from: jobs
   view_name: jobs
   label: "Query Jobs"
   view_label: "[Query Jobs]"
-
   sql_always_where: ${job_type} = 'QUERY';;
+  hidden: no
+}
+
+explore: jobs {
+  hidden: yes
 
   always_filter: {
     filters: [
@@ -92,6 +98,10 @@ explore: query_jobs {
     relationship: one_to_one
     type: left_outer
     sql_on: ${job_join_paths._alias} = 3 ;;
+  }
+  join: reservations {
+    relationship: many_to_one
+    sql_on: ${reservations.reservation_name} = ${jobs.reservation_id};;
   }
 
 #   join: jobs_by_project_raw__job_stages__input_stages {
