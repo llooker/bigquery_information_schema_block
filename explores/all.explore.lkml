@@ -1,4 +1,10 @@
 
+# This is a multi-fact explore to support qureies that include, e.g. both reservations and jobs metrics codimensioned by project
+#
+# Note: Date is not a supported codimension, since only jobs has a date dimension. As of 2020-05, capacity commitments and reservatoins
+#       do not support historical states. The relevant change tables do provide some information about recent changes, but not enough
+#       to reconstruct a historical state.
+
 include: "/views/reservations/capacity_commitments.view.lkml"
 include: "/views/reservations/reservations.view.lkml"
 include: "/views/jobs.view.lkml"

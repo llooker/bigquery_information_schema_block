@@ -17,8 +17,6 @@ view: job_join_paths {
 
 explore: query_jobs {
   extends: [jobs]
-  from: jobs
-  view_name: jobs
   label: "Query Jobs"
   view_label: "[Query Jobs]"
   sql_always_where: ${job_type} = 'QUERY';;
@@ -27,6 +25,8 @@ explore: query_jobs {
 
 explore: jobs {
   hidden: yes
+  from: jobs
+  view_name: jobs
 
   always_filter: {
     filters: [
@@ -36,7 +36,7 @@ explore: jobs {
   }
 
   join: job_join_paths {
-    relationship: many_to_one # In case we need measures from query jobs and want to use sym aggs rather than dim/msr-splitting the fields
+    relationship: one_to_many # In case we need measures from query jobs and want to use sym aggs rather than dim/msr-splitting the fields
     type: left_outer
     sql_table_name: UNNEST([1,2,3]) ;;
     sql_on:

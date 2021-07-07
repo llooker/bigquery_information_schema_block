@@ -243,6 +243,8 @@ view: jobs_base {
     </div> ;;
   }
 
+# TODO: Extract looker query context comments from query_text as dimensions
+
   dimension: state {
     type: string
     sql: ${TABLE}.state ;;
@@ -491,28 +493,6 @@ view: jobs_base {
 }
 
 
-##### NDT to filter by top N Projects #####
-
-view: project_gb_rank_ndt {
-  derived_table: {
-    explore_source: jobs_by_project_raw_all_queries {
-      column: project_id {field: jobs_by_project_raw_all_queries.project_id}
-      column: total_gb_processed {field: jobs_by_project_raw_all_queries.total_gb_processed}
-      derived_column: rank {sql: RANK() OVER (ORDER BY total_gb_processed DESC) ;;}
-      bind_all_filters: yes
-      sorts: [total_gb_processed: desc]
-      timezone: "query_timezone"
-    }
-  }
-
-  dimension: project_id {
-    hidden: yes
-  }
-
-  dimension: rank {
-    type: number
-  }
-}
 
 view: jobs_by_project_raw__labels {
 

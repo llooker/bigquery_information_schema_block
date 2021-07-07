@@ -1,6 +1,7 @@
-include: "/views/job_slot_concurrency.view.lkml"
+include: "/views/dynamic_dts/job_slot_concurrency.view.lkml"
 
 explore: job_slot_concurrency {
+  hidden: yes
   always_filter: {
     filters: [date.date_filter: "1 day ago for 1 day"]
   }

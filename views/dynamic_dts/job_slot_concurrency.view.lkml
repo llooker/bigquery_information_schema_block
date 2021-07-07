@@ -1,5 +1,7 @@
+# A view that allows you to calculate min/max concurrency to millisecond accuracy over a time period by stitching together concurrently running job stages
+
 include: "/views/date.view"
-include: "/views/date_fill.view"
+include: "/views/dynamic_dts/date_fill.view"
 include: "/views/jobs.view"
 
 view: job_slot_concurrency {

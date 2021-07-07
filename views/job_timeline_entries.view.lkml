@@ -1,3 +1,5 @@
+# This view is for the nested array within a job row. For the flattened table, see jobs_timeline.view.lkml
+
 view: job_timeline_entries {
 
   sql_table_name: UNNEST(jobs.timeline) ;;

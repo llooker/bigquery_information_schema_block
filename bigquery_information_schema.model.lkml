@@ -4,18 +4,19 @@
 connection: "@{connection}"
 
 # Temporarily commented out dashboards for validation, fix them at the end once model changes are done
-# include: "/**/*.dashboard"
-include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
+include: "/**/*.dashboard"
+#include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
 
 include: "/explores/all.explore.lkml"
 
 include: "/explores/jobs.explore.lkml"
 include: "/explores/job_slot_concurrency.explore.lkml"
+include: "/explores/jobs_timeline.explore.lkml"
 include: "/explores/assignments.explore.lkml"
 include: "/explores/capacity_commitments.explore.lkml"
 
 
-explore: commit_facts {}
+#explore: commit_facts {}
 
 
 ############## Creating an Explore Environment based off of Jobs_By_Organization, Unnesting all of the nested fields ##############
@@ -89,7 +90,8 @@ explore: commit_facts {}
 #     sql_on: ${columns.table_name} = ${tables.table_name} ;;
 #   }
 # }
-#
+
+
 # explore: jobs_by_project_raw_all_queries {
 #   from: jobs_by_project_raw
 #   label: "All Jobs by Organization"
@@ -100,31 +102,23 @@ explore: commit_facts {}
 #   }
 # }
 
-explore: jobs_timeline_by_project {
-  join: count_interval {
-    type: full_outer
-    fields: []
-    relationship: many_to_one
-    sql_on: ${jobs_timeline_by_project.period_start_hour_of_day} = ${count_interval.hour}
-      and ${jobs_timeline_by_project.period_start_day_of_week_index} = ${count_interval.dayofweek} ;;
-  }
-}
 
-explore: timeline_with_commits {
-  from: jobs_timeline_by_project
-  join: commit_facts {
-    type: left_outer
-    relationship: many_to_one
-    sql_on: ${commit_facts.timestamp_minute} = ${timeline_with_commits.period_start_minute} ;;
-  }
-  join: count_interval {
-    type: full_outer
-    fields: []
-    relationship: many_to_one
-    sql_on: ${timeline_with_commits.period_start_hour_of_day} = ${count_interval.hour}
-      and ${timeline_with_commits.period_start_day_of_week_index} = ${count_interval.dayofweek} ;;
-  }
-}
-
-
-explore: concurrency_per_second {}
+#
+# explore: timeline_with_commits {
+#   from: jobs_timeline_by_project
+#   join: commit_facts {
+#     type: left_outer
+#     relationship: many_to_one
+#     sql_on: ${commit_facts.timestamp_minute} = ${timeline_with_commits.period_start_minute} ;;
+#   }
+#   join: count_interval {
+#     type: full_outer
+#     fields: []
+#     relationship: many_to_one
+#     sql_on: ${timeline_with_commits.period_start_hour_of_day} = ${count_interval.hour}
+#       and ${timeline_with_commits.period_start_day_of_week_index} = ${count_interval.dayofweek} ;;
+#   }
+# }
+#
+#
+# explore: concurrency_per_second {}
