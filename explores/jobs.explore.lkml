@@ -1,52 +1,88 @@
-include: "/views/jobs.view.lkml"
+include: "/views/jobs/jobs.view.lkml"
 
-include: "/views/job_referenced_tables.view.lkml"
-include: "/views/job_timeline_entries.view.lkml"
-include: "/views/job_stages.view.lkml"
+# Nested fields
+include: "/views/jobs/job_referenced_tables.view.lkml"
+include: "/views/jobs/job_timeline_entries.view.lkml"
+include: "/views/jobs/job_stages.view.lkml"
 
+# Joins
 include: "/views/tables.view.lkml"
 include: "/views/columns.view.lkml"
 include: "/views/reservations/reservations.view.lkml"
+include: "/views/dynamic_dts/date_fill.view.lkml"
 
-view: job_join_paths {
-  dimension: _alias {
-    hidden: yes
-    sql:${TABLE};;
-  }
-}
+# Field-only views
+include: "/views/date.view.lkml"
+include: "/views/jobs/jobs_dates.view.lkml"
 
-explore: query_jobs {
-  extends: [jobs]
-  label: "Query Jobs"
-  view_label: "[Query Jobs]"
-  sql_always_where: ${job_type} = 'QUERY';;
+explore: jobs {
+  extends: [jobs_base]
+  description: "Explore jobs, such as queries. (Scope: @{scope})"
   hidden: no
 }
 
-explore: jobs {
+explore: jobs_in_project {
+  extends: [jobs_base]
+  from: jobs_in_project
+  description: "Explore jobs, such as queries. (Scope: PROJECT)"
+}
+
+explore: jobs_in_organization {
+  extends: [jobs_base]
+  from: jobs_in_project
+  description: "Explore jobs, such as queries. (Scope: ORGANIZATION)"
+}
+
+
+view: job_join_paths {dimension: _alias { hidden: yes sql:${TABLE};;}}
+
+explore: jobs_base {
+  view_label: "[Jobs]"
+  extension: required
   hidden: yes
   from: jobs
   view_name: jobs
 
+
   always_filter: {
     filters: [
-      jobs.state: "DONE"
-
+      jobs.state: "DONE",
+      jobs.job_type: "QUERY",
+      date.date_filter: "last 8 days" #Partition column
     ]
   }
+  #TODO: Push down date filter in SQL table name
+  #TODO: Maybe create job id -> timestamp filter mappping table?
+
+  join: date_fill {
+    type: full_outer
+    relationship: one_to_one
+    sql_on: FALSE ;;
+  }
+
+  join: date {
+    type: cross
+    relationship: one_to_one
+    sql_table_name: UNNEST([COALESCE(
+      {% if jobs._in_query      %} jobs.creation_time, {% endif %}
+      {% if date_fill._in_query %} date_fill.d, {% endif %}
+      CAST(NULL AS TIMESTAMP)
+      )]) ;;
+  }
+
+  join: jobs_dates {
+    relationship: one_to_one
+    sql:  ;;
+  }
+
 
   join: job_join_paths {
-    relationship: one_to_many # In case we need measures from query jobs and want to use sym aggs rather than dim/msr-splitting the fields
+    relationship: one_to_many # In case we need measures from jobs and want to use sym aggs rather than dim/msr-splitting the fields
     type: left_outer
-    sql_table_name: UNNEST([1,2,3]) ;;
-    sql_on:
-    0=1
-    {% if job_referenced_tables._in_query
-       %} OR ${job_join_paths._alias} = 1 {%endif%}
-    {% if job_timeline_entries._in_query
-       %} OR ${job_join_paths._alias} = 2 {%endif%}
-    {% if job_stages._in_query
-       %} OR ${job_join_paths._alias} = 3 {%endif%}
+    sql_table_name: UNNEST([1,2]) ;;
+    sql_on: 0=1
+    {% if job_referenced_tables._in_query %} OR ${job_join_paths._alias} = 1 {%endif%}
+    {% if job_stages._in_query            %} OR ${job_join_paths._alias} = 2 {%endif%}
     ;;
   }
 
@@ -86,19 +122,13 @@ explore: jobs {
       AND ${cluster_1_columns.clustering_ordinal_position} = 1;;
   }
 
-  join: job_timeline_entries {
-    view_label: "Job > Timeline"
+  join: job_stages {
+    view_label: "Job > Stages"
     relationship: one_to_one
     type: left_outer
     sql_on: ${job_join_paths._alias} = 2 ;;
   }
 
-  join: job_stages {
-    view_label: "Job > Stages"
-    relationship: one_to_one
-    type: left_outer
-    sql_on: ${job_join_paths._alias} = 3 ;;
-  }
   join: reservations {
     relationship: many_to_one
     sql_on: ${reservations.reservation_name} = ${jobs.reservation_id};;
@@ -128,14 +158,14 @@ explore: jobs {
 #     type: left_outer
 #     sql_on: ${jobs_by_project_raw__referenced_tables.referenced_dataset_id} = ${referenced_datasets_ndt.referenced_dataset} ;;
 #   }
-#
-#   join: commit_facts {
-#     view_label: "Slot Commitments"
-#     type: left_outer
-#     relationship: many_to_one
-#     sql_on:  ${jobs_by_project_raw.creation_minute} = ${commit_facts.timestamp_minute} ;;
-#   }
 
+  # The nested timeline should be easy to add under the join paths, but the regular job timeline table is probably more convenient
+#   join: job_timeline_entries {
+#     view_label: "Job > Timeline"
+#     relationship: one_to_one
+#     type: left_outer
+#     sql_on: ${job_join_paths._alias} = ... ;;
+#   }
 
 
 }

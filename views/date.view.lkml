@@ -14,22 +14,50 @@ view: date {
     hidden: yes # For use with always_filter
     sql: COALESCE({% condition %} ${TABLE} {% endcondition %},TRUE);; # True if null, i.e. applied to a row with no date column
   }
+
   dimension_group: _ {
     type: time
     datatype: timestamp
     sql: ${TABLE} ;;
     timeframes: [week,date,hour,minute15,minute5,minute,second,millisecond100,raw]
   }
+
   dimension_group: _parts_of{
     type: time
     datatype: timestamp
     sql: ${TABLE} ;;
     timeframes: [day_of_week, hour_of_day]
   }
+
+  dimension_group: current {
+    type: time
+    datatype: timestamp
+    sql: CURRENT_TIMESTAMP() ;;
+    hidden: yes # This is mainly for use in other dimension definitions
+    timeframes: [week,date,hour,minute15,minute5,minute,second,millisecond100,raw,
+      day_of_week, hour_of_day]
+  }
+
   dimension: days_ago {
     # Can be helpful in writing custom fields with flexible date logic, since date functions in custom fields are kinda wonky at the moment
     hidden: yes
     type: number
     sql: TIMESTAMP_DIFF(CURRENT_TIMESTAMP(),${__date}, DAY) ;;
+  }
+
+  dimension: is_wtd {
+    group_label: "Is period-to-date?"
+    label: "Is WtD?"
+    description: "Is week-to-date? Whether the date in question is earlier within its week than the current date. Useful for filtering to comparable parts of the current period and a past period"
+    type: yesno
+    sql: ${_parts_of_day_of_week} < ${current_day_of_week}  ;;
+  }
+
+  dimension: is_dth {
+    group_label: "Is period-to-date?"
+    label: "Is DtH?"
+    description: "Is day-to-hour? Whether the hour in question is earlier within its day than the current hour. Useful for filtering to comparable parts of the current period and a past period"
+    type: yesno
+    sql: ${current_hour_of_day} < ${current_hour_of_day}  ;;
   }
 }

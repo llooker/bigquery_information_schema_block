@@ -1,4 +1,4 @@
-include: "/views/jobs.view.lkml"
+include: "/views/jobs/jobs.view.lkml"
 
 view: job_referenced_tables {
 

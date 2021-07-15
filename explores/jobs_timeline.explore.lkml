@@ -8,6 +8,7 @@ include: "/views/jobs_timeline/jobs_timeline_job.view.lkml"
 
 explore: jobs_timeline {
   view_label: "[Jobs Timeline]"
+  description: "This dataset contains a row for every second (between creation and completion) for every query. (Scope: @{scope})"
 
   always_filter: {
     filters: [

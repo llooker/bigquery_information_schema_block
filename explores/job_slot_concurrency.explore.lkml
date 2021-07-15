@@ -1,4 +1,5 @@
 include: "/views/dynamic_dts/job_slot_concurrency.view.lkml"
+include: "/views/date.view.lkml"
 
 explore: job_slot_concurrency {
   hidden: yes

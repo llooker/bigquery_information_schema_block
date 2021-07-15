@@ -2,7 +2,7 @@
 
 include: "/views/date.view"
 include: "/views/dynamic_dts/date_fill.view"
-include: "/views/jobs.view"
+include: "/views/jobs/jobs.view"
 
 view: job_slot_concurrency {
   derived_table: {

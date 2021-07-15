@@ -24,7 +24,7 @@ constant: billing_project_id {
 
 constant: max_job_lookback {
   # The maximum amount of time to look backwards in job data to find jobs that may still be open in a filtered window of slot usage
-  # (This is necessary because detailed slot usage data is in job steps, which are nested within jobs, which are partitioned by job creation time.
+  # (This is necessary because detailed slot usage data is in job steps or job timelines, but are partitioned by job creation time.
   #  So, a job created at 11:30 that runs for 1 hour should affect slots usage between 12:00-4:00, but for performance reasons we want to limit how far back
   #  we'll scan for these long-running jobs)
   #  TODO: Here's a query to help set a max based on your longest running jobs: ...

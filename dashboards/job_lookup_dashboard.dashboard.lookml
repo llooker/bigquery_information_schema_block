@@ -5,7 +5,7 @@
   - title: Job Stages
     name: Job Stages
     model: bigquery_information_schema
-    explore: query_jobs
+    explore: jobs
     type: looker_grid
     fields: [job_stages.name, job_stages.total_slot_ms,
       job_stages.total_shuffle_output_bytes]
@@ -48,7 +48,7 @@
   - title: New Tile
     name: New Tile
     model: bigquery_information_schema
-    explore: query_jobs
+    explore: jobs
     type: single_value
     fields: [jobs.user_email]
     sorts: [jobs.user_email]
@@ -74,7 +74,7 @@
   - title: Total GiB Processed
     name: Total GiB Processed
     model: bigquery_information_schema
-    explore: query_jobs
+    explore: jobs
     type: single_value
     fields: [jobs.total_gb_processed]
     limit: 500
@@ -99,7 +99,7 @@
   - title: Bytes Spilled to Disk
     name: Bytes Spilled to Disk
     model: bigquery_information_schema
-    explore: query_jobs
+    explore: jobs
     type: single_value
     fields: [jobs.average_shuffle_output_bytes_spilled]
     limit: 500
@@ -129,6 +129,6 @@
     allow_multiple_values: true
     required: false
     model: bigquery_information_schema
-    explore: query_jobs
+    explore: jobs
     listens_to_filters: []
     field: jobs.job_id

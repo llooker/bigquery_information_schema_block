@@ -50,4 +50,11 @@ view: date_fill {
     type: number
     description: "Total seconds in the date period(s)"
   }
+
+  measure: total_interval_duration_s {
+    # To be used as the denominator for all averages "over time"
+    hidden: yes
+    type: sum
+    sql: ${date_fill.duration_s} ;;
+  }
 }

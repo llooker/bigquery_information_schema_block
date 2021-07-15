@@ -4,19 +4,20 @@
 connection: "@{connection}"
 
 # Temporarily commented out dashboards for validation, fix them at the end once model changes are done
-include: "/**/*.dashboard"
-#include: "/views/*.view.lkml"                # include all views in the views/ folder in this project
+# include: "/**/*.dashboard"
 
+# Multi-purpose "outer join on false" explore
 include: "/explores/all.explore.lkml"
 
+# Core explores
 include: "/explores/jobs.explore.lkml"
-include: "/explores/job_slot_concurrency.explore.lkml"
 include: "/explores/jobs_timeline.explore.lkml"
+include: "/explores/tables.explore.lkml"
+
+# Niche/hidden explores
 include: "/explores/assignments.explore.lkml"
 include: "/explores/capacity_commitments.explore.lkml"
-
-
-#explore: commit_facts {}
+include: "/explores/job_slot_concurrency.explore.lkml"
 
 
 ############## Creating an Explore Environment based off of Jobs_By_Organization, Unnesting all of the nested fields ##############

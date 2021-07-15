@@ -83,12 +83,16 @@ view: jobs_timeline_job {
 
   dimension: bytes_processed {
     hidden: yes # Gb version is more reasonable units
+    group_label: "Bytes"
+    label: "Processed Bytes"
     type: number
     sql: ${jobs_timeline.sql_table_name}.total_bytes_processed ;;
   }
 
-  dimension: gb_processed {
+  dimension: gib_processed {
     hidden: yes # Use total measure instead
+    group_label: "Bytes"
+    label: "Processed GiB"
     type: number
     sql: ${bytes_processed} / (1024*1024*1024)  ;;
     value_format_name: decimal_2
@@ -109,27 +113,32 @@ view: jobs_timeline_job {
     drill_fields: [job_level*]
   }
 
-  measure: total_gb_processed {
+  measure: total_gib_processed {
     group_label: "Bytes"
-    label: "Processed Gb"
-    description: "Processed bytes, but in gigabytes"
+    label: "Processed GiB"
+    description: "Processed bytes, but in gigibytes (2^30 bytes)"
     type: number
     sql: ${total_bytes_processed} / (1024*1024*1024)   ;;
-    value_format: "#,##0.0 \" Gb\""
+    value_format: "#,##0.0 \" GiB\""
     drill_fields: [job_level*]
   }
 
   measure: total_tb_processed {
     group_label: "Bytes"
-    label: "Processed Tb"
-    description: "Processed bytes, but in terrabytes"
+    label: "Processed TiB"
+    description: "Processed bytes, but in tebibytes (2^40 bytes)"
     type: number
     sql: ${total_bytes_processed} / (1024*1024*1024*1024)   ;;
-    value_format: "#,##0.00 \" Tb\""
+    value_format: "#,##0.00 \" TiB\""
     drill_fields: [job_level*]
   }
 
   # }
+
+  measure: count {
+    type: count_distinct
+    sql: ${job_id} ;;
+  }
 
   set: job_level {
     fields: [
