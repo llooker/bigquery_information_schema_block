@@ -10,6 +10,8 @@ include: "/views/tables.view.lkml"
 
 include: "/views/dynamic_dts/date_fill.view.lkml"
 include: "/views/date.view.lkml"
+include: "/views/jobs/jobs_dates.view.lkml"
+include: "/views/jobs_timeline/jobs_timeline_dates.view.lkml"
 
 view: none {
   derived_table: {
@@ -60,10 +62,28 @@ explore: all {
     sql_on: FALSE ;;
   }
 
+  # Comeasure views
+
+  join: jobs_dates {
+    relationship: one_to_one
+    view_label: "Jobs"
+    sql:  ;;
+  }
+  join: jobs_timeline_dates {
+    relationship: one_to_one
+    view_label: "Jobs Timeline"
+    sql:  ;;
+  }
+
 
   # Codimension views
 
   join: project_id {
+
+    # Note: later, it may be helpful to have multiple project fields, since some views are associated with multiple projects in different ways
+    # e.g. assignments have both the admin/billing project ID, and sometimes an assignee project ID
+    # Job table scan steps might have both a job project ID and a table project ID
+
     type: cross
     relationship: one_to_one
     sql_table_name: UNNEST([COALESCE(
@@ -76,15 +96,12 @@ explore: all {
       )]) ;;
   }
 
-  # It may be helpful to have multiple project fields, since some views are associated with multiple projects in different ways
-  # e.g. assignments have both the admin/billing project ID, and sometimes an assignee project ID
-  # Job table scan steps might have both a job project ID and a table project ID
-
   join: date {
     type: cross
     relationship: one_to_one
     sql_table_name: UNNEST([COALESCE(
       {% if jobs._in_query          %} jobs.creation_time, {% endif %}
+      {% if jobs_timeline._in_query %} jobs_timeline.period_start, {% endif %}
       {% if date_fill._in_query     %} date_fill.d, {% endif %}
       CAST(NULL AS TIMESTAMP)
       )]) ;;

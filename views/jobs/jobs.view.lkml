@@ -1,19 +1,41 @@
-view: jobs_by_project_raw {
-  # Temporary alias until refactor done
-  extends: [jobs_in_project]
-}
+
+# https://cloud.google.com/bigquery/docs/information-schema-jobs
+
+include: "/views/date.view.lkml"
 
 view: jobs {
   extends: [jobs_base]
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_@{scope}` ;;
+  derived_table: {
+    sql:
+      SELECT *
+      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_@{scope}`
+      WHERE creation_time >= {% date_start date.date_filter%}
+        AND creation_time < {% date_end date.date_filter%}
+    ;;
+  }
 }
 view: jobs_in_project {
   extends: [jobs_base]
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_PROJECT` ;;
+  derived_table: {
+    sql:
+      SELECT *
+      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_PROJECT`
+      WHERE creation_time >= {% date_start date.date_filter%}
+        AND creation_time < {% date_end date.date_filter%}
+    ;;
+  }
+  # TODO: Override query_text dimension to not be dynamic based on scope
 }
 view: jobs_in_organization{
   extends: [jobs_base]
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION` ;;
+  derived_table: {
+    sql:
+      SELECT *
+      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION`
+      WHERE creation_time >= {% date_start date.date_filter%}
+        AND creation_time < {% date_end date.date_filter%}
+    ;;
+  }
 }
 
 view: jobs_base {

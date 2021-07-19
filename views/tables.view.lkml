@@ -2,10 +2,7 @@ view: tables {
 
   # https://cloud.google.com/bigquery/docs/information-schema-tables
 
-  derived_table: {
-    sql: SELECT * FROM `region-us.INFORMATION_SCHEMA.TABLES`
-      ;;
-  }
+  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.TABLES` ;;
 
   measure: count {
     type: count

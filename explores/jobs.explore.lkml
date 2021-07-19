@@ -29,7 +29,7 @@ explore: jobs_in_project {
 
 explore: jobs_in_organization {
   extends: [jobs_base]
-  from: jobs_in_project
+  from: jobs_in_organization
   description: "Explore jobs, such as queries. (Scope: ORGANIZATION)"
 }
 
@@ -102,24 +102,24 @@ explore: jobs_base {
         AND ${tables.table_name} = ${job_referenced_tables.table_id} ;;
   }
 
-  join: partition_columns {
+  join: partition_column {
     view_label: "Job > Tables > Partition"
     from: columns
     type: left_outer
     relationship: one_to_one
     sql_on:
-      ${partition_columns.table_name} = ${tables.table_name}
-      AND ${partition_columns.is_partitioning_column};;
+      ${partition_column.table_name} = ${tables.table_name}
+      AND ${partition_column.is_partitioning_column};;
   }
 
-  join: cluster_1_columns {
+  join: cluster_1_column {
     view_label: "Job > Tables > Cluster(1)"
     from: columns
     type: left_outer
     relationship: one_to_one
     sql_on:
-      ${cluster_1_columns.table_name} = ${tables.table_name}
-      AND ${cluster_1_columns.clustering_ordinal_position} = 1;;
+      ${cluster_1_column.table_name} = ${tables.table_name}
+      AND ${cluster_1_column.clustering_ordinal_position} = 1;;
   }
 
   join: job_stages {
@@ -129,9 +129,10 @@ explore: jobs_base {
     sql_on: ${job_join_paths._alias} = 2 ;;
   }
 
-  join: reservations {
+  join: reservation {
+    from: reservations
     relationship: many_to_one
-    sql_on: ${reservations.reservation_name} = ${jobs.reservation_id};;
+    sql_on: ${reservation.reservation_name} = ${jobs.reservation_id};;
   }
 
 #   join: jobs_by_project_raw__job_stages__input_stages {

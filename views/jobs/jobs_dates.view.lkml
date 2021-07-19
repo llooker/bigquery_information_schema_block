@@ -13,13 +13,14 @@ view: jobs_dates {
 #     drill_fields: [jobs.detail*]
 #   }
 #
-#   measure: average_job_rate {
-#     type: number
-#     sql: ${jobs.count} / NULLIF(${date_fill.total_interval_duration_s},0) ;;
-#     description: "Average rate of jobs, in jobs/s (Count of jobs divided by the period/timerange duration in seconds)"
-#     value_format_name: decimal_2
-#     drill_fields: [jobs.detail*]
-#   }
+  measure: average_job_rate_per_s {
+    label: "Average Job Rate (jobs/s)"
+    type: number
+    sql: ${jobs.count} / NULLIF(${date_fill.total_interval_duration_s},0) ;;
+    description: "Average rate of jobs, in jobs/s (Count of jobs divided by the period/timerange duration in seconds)"
+    value_format_name: decimal_2
+    drill_fields: [jobs.detail*]
+  }
 
   measure: average_processing_rate_gib_per_s {
     group_label: "Processed Bytes"

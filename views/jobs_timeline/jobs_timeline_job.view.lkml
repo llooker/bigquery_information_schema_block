@@ -14,7 +14,8 @@ view: jobs_timeline_job {
     sql: ${jobs_timeline.sql_table_name}.job_id ;;
     link: {
       label: "Job Lookup Dashboard"
-      url: "/dashboards/4?Job%20Id={{ value }}&filter_config=%7B%22Job%20Id%22:%5B%7B%22type%22:%22%3D%22,%22values%22:%5B%7B%22constant%22:%22{{ value | encode_uri }}%22%7D,%7B%7D%5D,%22id%22:6%7D%5D%7D"
+      #TODO: Add timestamp filter for performance
+      url: "/dashboards/4?Job%20Id={{ value }}"
       icon_url: "http://www.looker.com/favicon.ico"
     }
     link: {

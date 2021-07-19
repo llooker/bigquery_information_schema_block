@@ -5,6 +5,7 @@ include: "/views/dynamic_dts/date_fill.view.lkml"
 include: "/views/date.view.lkml"
 include: "/views/jobs_timeline/jobs_timeline_dates.view.lkml"
 include: "/views/jobs_timeline/jobs_timeline_job.view.lkml"
+include: "/views/jobs_timeline/jobs_timeline_job_dates.view.lkml"
 
 explore: jobs_timeline {
   view_label: "[Jobs Timeline]"
@@ -15,10 +16,6 @@ explore: jobs_timeline {
       date.date_filter: "last 8 days"
       ]
     }
-
-  # Filtering on job_creation_time, which is the partition column, even though the filter is logically on the timeline period. We include a lookback interval to account for this.
-  sql_always_where: COALESCE(${jobs_timeline.job_creation_time_raw} >= TIMESTAMP_SUB({% date_start date.date_filter %}, INTERVAL @{max_job_lookback}), TRUE)
-    AND COALESCE(${jobs_timeline.job_creation_time_raw} <= {% date_end date.date_filter %}, TRUE) ;;
 
   join: date_fill {
     type: full_outer
@@ -37,14 +34,21 @@ explore: jobs_timeline {
   }
 
   join: jobs_timeline_dates {
-    sql:  ;; #Field only view for cross-view fields
     view_label: "[Jobs Timeline]"
+    sql:  ;; #Field only view for cross-view fields
     relationship: one_to_one
   }
 
   join: jobs_timeline_job {
+    view_label: "Job"
     sql:  ;; #Field only view for cross-view fields ;;
     relationship: many_to_one
+  }
+
+  join: jobs_timeline_job_dates {
+    view_label: "Job"
+    sql:  ;; #Field only view for cross-view fields
+    relationship: one_to_one
   }
 
 }

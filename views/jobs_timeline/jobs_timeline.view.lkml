@@ -3,17 +3,40 @@
 # This is similar to the timeline array nested within the jobs table, but flattened
 # For slot usage analysis, this is more expensive to query at the job level, but is more accurate for fine time granularities
 
+include: "/views/date.view.lkml"
+
 view: jobs_timeline {
   extends: [jobs_timeline_base]
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_@{scope}` ;;
+  derived_table: {
+    sql:
+      SELECT *
+      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_@{scope}`
+      WHERE job_creation_time >= TIMESTAMP_SUB({% date_start date.date_filter %}, INTERVAL @{max_job_lookback})
+      AND job_creation_time <= {% date_end date.date_filter %}
+     ;;
+  }
 }
 view: jobs_timeline_in_project {
   extends: [jobs_timeline_base]
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_PROJECT` ;;
+  derived_table: {
+    sql:
+      SELECT *
+      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_PROJECT`
+      WHERE job_creation_time >= TIMESTAMP_SUB({% date_start date.date_filter %}, INTERVAL @{max_job_lookback})
+      AND job_creation_time <= {% date_end date.date_filter %}
+     ;;
+  }
 }
 view: jobs_timeline_in_organization{
   extends: [jobs_timeline_base]
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_ORGANIZATION` ;;
+  derived_table: {
+    sql:
+      SELECT *
+      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_TIMELINE_BY_ORGANIZATION`
+      WHERE job_creation_time >= TIMESTAMP_SUB({% date_start date.date_filter %}, INTERVAL @{max_job_lookback})
+      AND job_creation_time <= {% date_end date.date_filter %}
+     ;;
+  }
 }
 
 view: jobs_timeline_base {

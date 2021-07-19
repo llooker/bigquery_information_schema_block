@@ -1,8 +1,5 @@
 view: columns {
-  derived_table: {
-    sql: SELECT * FROM `region-us.INFORMATION_SCHEMA.COLUMNS`
-      ;;
-  }
+  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.COLUMNS` ;;
 
   measure: count {
     type: count
