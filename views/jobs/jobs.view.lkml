@@ -52,7 +52,7 @@ view: jobs_base {
       label: "Job Lookup Dashboard"
       #TODO: Promote to LookML Dash link
       #TODO: also include the creation time value for faster lookup
-      url: "/dashboards/3?Job%20ID={{ value | encode_uri}}"
+      url: "/dashboards-next/bigquery_information_schema::job_lookup_dashboard?Job%20ID={{ value | encode_uri}}&Created={{date.date_in_filter_format | encode_uri}}"
       icon_url: "http://www.looker.com/favicon.ico"
     }
     link: {
@@ -315,7 +315,7 @@ view: jobs_base {
     label: "Duration (s)"
     description: "Time elapsed from job creation to job end, in seconds"
     type: number
-    sql: TIMESTAMP_DIFF(${end_time_raw}, ${creation_raw}, SECOND) ;;
+    sql: TIMESTAMP_DIFF(${end_time_raw}, ${creation_raw}, MILLISECOND) / 1000 ;;
   }
 
   dimension: runtime_ms {
@@ -331,13 +331,73 @@ view: jobs_base {
     label: "Runtime (s)"
     description: "Time elapsed from job start to job end, in seconds"
     type: number
-    sql: TIMESTAMP_DIFF(${end_time_raw}, ${start_time_raw}, SECOND) ;;
+    sql: TIMESTAMP_DIFF(${end_time_raw}, ${start_time_raw}, MILLISECOND) / 1000 ;;
+  }
+
+  # }
+
+  # Dimension group: Delay to Start {
+
+  dimension: delay_to_start_ms {
+    group_label: "Delay to Start"
+    label: "Delay to Start (ms)"
+    description: "Time elapsed from job creation to job start, in milliseconds"
+    type: number
+    sql: TIMESTAMP_DIFF(${start_time_raw}, ${creation_raw}, MILLISECOND) ;;
+  }
+
+  dimension: delay_to_start_s {
+    group_label: "Delay to Start"
+    label: "Delay to Start (s)"
+    description: "Time elapsed from job creation to job start, in seconds"
+    type: number
+    sql: ${delay_to_start_ms} / 1000 ;;
+  }
+
+
+  dimension: is_delay_to_start_200ms {
+    hidden: yes
+    group_label: "Delay to Start"
+    label: "Is Delay to Start > 0.2s?"
+    description: "Was time elapsed from job creation to job start greater than 200 milliseconds"
+    type: yesno
+    sql: ${delay_to_start_ms} > 200 ;;
+  }
+
+
+  dimension: is_delay_to_start_1000ms {
+    hidden: yes
+    group_label: "Delay to Start"
+    label: "Is Delay to Start > 1s?"
+    description: "Was time elapsed from job creation to job start greater than 1 second"
+    type: yesno
+    sql: ${delay_to_start_ms} > 1000 ;;
+  }
+
+
+  dimension: is_delay_to_start_5000ms {
+    hidden: yes
+    group_label: "Delay to Start"
+    label: "Is Delay to Start > 5s?"
+    description: "Was time elapsed from job creation to job start greater than 5 seconds"
+    type: yesno
+    sql: ${delay_to_start_ms} > 5000 ;;
+  }
+
+
+  dimension: is_delay_to_start_25000ms {
+    hidden: yes
+    group_label: "Delay to Start"
+    label: "Is Delay to Start >25s?"
+    description: "Was time elapsed from job creation to job start greater than 25 seconds"
+    type: yesno
+    sql: ${delay_to_start_ms} > 25000 ;;
   }
 
   # }
 
 
-  # Dimension group: Query Text
+  # Dimension group: Query Text {
 
   dimension: query_raw {
     hidden: yes
@@ -356,35 +416,68 @@ view: jobs_base {
     </div> ;;
   }
 
+  dimension: query_snippet {
+    group_label: "Query Snippet"
+    description: "First 2000 characters of the SQL query text. Note: Only the PROJECT scope has the query column"
+    # The Query Text field is removed from the Jobs by Organization table
+    type: string
+    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+      else %} ${query_raw} {% endif %};;
+    html:
+    <div style="white-space: pre;">{{rendered_value}}
+    </div> ;;
+  }
+
+  # }
+
+  # Dimension group: Looker context {
 
   dimension: looker_history_id {
-    group_label: "Query Text"
+    group_label: "Looker Context"
     label: "Looker History ID"
     description: "The Looker history ID, extracted from the context comment in the SQL query text, if available. Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
     sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
-      else %} sql: REGEXP_EXTRACT( ${query_raw}, r'"history_id":\s*(\d*)' ) {% endif %};;
+      else %} REGEXP_EXTRACT( ${query_raw}, r'"history_id":\s*(\d*)' ) {% endif %};;
   }
 
   dimension: looker_user_id {
-    group_label: "Query Text"
+    group_label: "Looker Context"
     label: "Looker User ID"
     description: "The Looker user ID, extracted from the context comment in the SQL query text, if available. Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
     sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
-      else %} sql: REGEXP_EXTRACT( ${query_raw}, r'"user_id":\s*(\d*)' ) {% endif %};;
+      else %} REGEXP_EXTRACT( ${query_raw}, r'"user_id":\s*(\d*)' ) {% endif %};;
   }
 
   dimension: looker_instance_slug {
-    group_label: "Query Text"
+    group_label: "Looker Context"
     label: "Looker Instance Slug"
     description: "The Looker instance slug, which identifies the Looker instance that issues the query, extracted from the context comment in the SQL query text, if available. (For clustered Looker deployments, the instance represents the whole cluster, not an individual node.) Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
     sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
-      else %} sql: REGEXP_EXTRACT( ${query_raw}, r'"instance_slug":\s*"([^"]*)"' ) {% endif %};;
+      else %} REGEXP_EXTRACT( ${query_raw}, r'"instance_slug":\s*"([^"]*)"' ) {% endif %};;
+  }
+
+  dimension: looker_pdt_type {
+    group_label: "Looker Context"
+    label: "Looker PDT Type"
+    description: "Whether the current job represents a production PDT build (Prod), a dev-mode PDT build (Dev), or is not a PDT (No)"
+    # https://docs.looker.com/admin-options/server/usage#sql_comments
+    type: string
+    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+      else %} CASE
+          WHEN ${query_raw} NOT LIKE '-- Building %'
+          THEN 'No'
+          WHEN ${query_raw} LIKE '% in dev mode on instance %'
+          THEN 'Dev'
+          WHEN ${query_raw} IS NOT NULL
+          THEN 'Prod'
+          END {%endif%};;
+    suggestions: ["No","Dev","Prod"]
   }
 
 # End of dimension group: query text }
@@ -575,6 +668,7 @@ view: jobs_base {
     type: average
     value_format_name: decimal_1
     sql: ${duration_s} ;;
+    drill_fields: [detail*]
   }
   measure: average_runtime {
     group_label: "Duration"
@@ -583,12 +677,132 @@ view: jobs_base {
     type: average
     value_format_name: decimal_1
     sql: ${runtime_s} ;;
+    drill_fields: [detail*]
   }
+  measure: total_duration {
+    group_label: "Duration"
+    label: "Total Duration (s)"
+    description: "Total time elapsed across jobs from job creation to job end, in seconds"
+    type: sum
+    value_format_name: decimal_0
+    sql: ${duration_s} ;;
+    drill_fields: [detail*]
+  }
+  measure: total_runtime {
+    group_label: "Duration"
+    label: "Total Runtime (s)"
+    description: "Total time elapsed across jobs from job start to job end, in seconds"
+    type: sum
+    value_format_name: decimal_1
+    sql: ${runtime_s} ;;
+    drill_fields: [detail*]
+  }
+
+  # }
+
+  # Measure group: Delay to start {
+
+  measure: average_delay_to_start_time {
+    group_label: "Delay to Start"
+    label: "Average Delay to Start Time (s)"
+    description: "Average time elapsed from job creation to job start, in seconds"
+    type: average
+    value_format_name: decimal_1
+    sql: ${delay_to_start_s} ;;
+    drill_fields: [detail*]
+  }
+
+  measure: total_delay_to_start_time {
+    group_label: "Delay to Start"
+    label: "Total Delay to Start Time (s)"
+    description: "Total time elapsed across jobs from job creation to job start, in seconds"
+    type: sum
+    value_format_name: decimal_1
+    sql: ${delay_to_start_s} ;;
+    drill_fields: [detail*]
+  }
+
+  measure: jobs_delayed_200ms {
+    group_label: "Delay to Start"
+    label: "Jobs Delayed > 0.2s"
+    description: "Count of jobs whose delay to start was over 200 milliseconds"
+    type: count
+    filters: [is_delay_to_start_200ms: "yes"]
+    drill_fields: [detail*]
+  }
+
+  measure: jobs_delayed_1000ms {
+    group_label: "Delay to Start"
+    label: "Jobs Delayed > 1s"
+    description: "Count of jobs whose delay to start was over 1 second"
+    type: count
+    filters: [is_delay_to_start_1000ms: "yes"]
+    drill_fields: [detail*]
+  }
+
+  measure: jobs_delayed_5000ms {
+    group_label: "Delay to Start"
+    label: "Jobs Delayed > 5s"
+    description: "Count of jobs whose delay to start was over 5 seconds"
+    type: count
+    filters: [is_delay_to_start_5000ms: "yes"]
+    drill_fields: [detail*]
+  }
+
+  measure: jobs_delayed_25000ms {
+    group_label: "Delay to Start"
+    label: "Jobs Delayed >25s"
+    description: "Count of jobs whose delay to start was over 25 seconds"
+    type: count
+    filters: [is_delay_to_start_25000ms: "yes"]
+    drill_fields: [detail*]
+  }
+
+  measure: percent_jobs_delayed_200ms {
+    group_label: "Delay to Start"
+    label: "Precent Jobs Delayed > 0.2s"
+    description: "Percent of jobs whose delay to start was over 200 milliseconds"
+    type: number
+    value_format_name: percent_1
+    sql: ${jobs_delayed_200ms} / NULLIF(${count},0) ;;
+    drill_fields: [detail*]
+  }
+
+  measure: percent_jobs_delayed_1000ms {
+    group_label: "Delay to Start"
+    label: "Precent Jobs Delayed > 1s"
+    description: "Percent of jobs whose delay to start was over 1 second"
+    type: number
+    value_format_name: percent_1
+    sql: ${jobs_delayed_1000ms} / NULLIF(${count},0) ;;
+    drill_fields: [detail*]
+  }
+
+  measure: percent_jobs_delayed_5000ms {
+    group_label: "Delay to Start"
+    label: "Precent Jobs Delayed > 5s"
+    description: "Percent of jobs whose delay to start was over 5 seconds"
+    type: number
+    value_format_name: percent_2
+    sql: ${jobs_delayed_5000ms} / NULLIF(${count},0) ;;
+    drill_fields: [detail*]
+  }
+
+  measure: percent_jobs_delayed_25000ms {
+    group_label: "Delay to Start"
+    label: "Precent Jobs Delayed >25s"
+    description: "Percent of jobs whose delay to start was over 25 seconds"
+    type: number
+    value_format_name: percent_2
+    sql: ${jobs_delayed_25000ms} / NULLIF(${count}),0) ;;
+    drill_fields: [detail*]
+  }
+
+  # }
 
   # End measure group duration }
 
-  # Measure group: Spill to Disk
-
+  # Measure group: Spill to Disk {
 
   measure: any_spill_to_disk {
     group_label: "Spill to Disk"
@@ -596,6 +810,7 @@ view: jobs_base {
     description: "Whether any bytes spilled to disk"
     type: yesno
     sql: BOOL_OR(${has_spill_to_disk}) ;;
+    drill_fields: [detail*]
   }
 
   measure: spill_to_disk_count {
@@ -617,13 +832,13 @@ view: jobs_base {
     value_format_name: decimal_2
   }
 
-  measure: spill_to_disk_rate {
+  measure: percent_spill_to_disk {
     group_label: "Spill to Disk"
-    label: "Spill to Disk Rate"
+    label: "Percent Spill to Disk"
     description: "Percent of jobs with spill to disk"
     type: number
     value_format_name: percent_1
-    sql: ${spill_to_disk_count} / ${count} ;;
+    sql: ${spill_to_disk_count} / NULLIF(${count},0) ;;
     drill_fields: [detail*]
   }
 
@@ -633,6 +848,7 @@ view: jobs_base {
     label: "Total Spill to Disk Bytes"
     description: "Total bytes spilled to disk"
     type: sum
+    sql: ${spill_to_disk_bytes} ;;
     filters: [has_spill_to_disk: "yes"]
     drill_fields: [detail*]
   }
@@ -647,6 +863,73 @@ view: jobs_base {
   }
 
   # End measure group spill to disk bytes }
+
+  # Measure Group: Slot Milliseconds {
+
+  measure: total_slot_ms {
+    group_label: "Slot Milliseconds"
+    label: "Total Slot ms"
+    type: sum
+    sql: ${slot_ms} ;;
+    value_format_name: decimal_0
+    drill_fields: [job_level*]
+  }
+
+  measure: total_slot_seconds {
+    group_label: "Slot Milliseconds"
+    type: number
+    sql: ${total_slot_ms} / 1000 ;;
+    value_format_name: decimal_2
+    drill_fields: [job_level*]
+  }
+
+  measure: total_slot_minutes {
+    group_label: "Slot Milliseconds"
+    type: number
+    sql: ${total_slot_ms} / 1000/60 ;;
+    value_format_name: decimal_2
+    drill_fields: [job_level*]
+  }
+
+  measure: total_slot_hours {
+    group_label: "Slot Milliseconds"
+    type: number
+    sql: ${total_slot_ms} / 1000/60/60;;
+    value_format_name: decimal_2
+    drill_fields: [job_level*]
+  }
+
+  measure: average_slot_ms {
+    group_label: "Slot Milliseconds"
+    label: "Average Slot ms"
+    description: "The average slot milliseconds used across jobs"
+    type: average
+    sql: ${slot_ms} ;;
+    value_format_name: decimal_0
+    drill_fields: [job_level*]
+  }
+
+  measure: max_slot_ms {
+    group_label: "Slot Milliseconds"
+    label: "Max Slot ms"
+    description: "The maximum slot milliseconds used by a single job"
+    type: max
+    sql: ${slot_ms} ;;
+    value_format_name: decimal_0
+    drill_fields: [job_level*]
+  }
+
+  measure: skew_slot_ms {
+    group_label: "Slot Milliseconds"
+    label: "Slot ms Skew"
+    description: "The ratio of the maximum slot milliseconds used by a single job against the average slot milliseconds used across jobs"
+    type: number
+    sql: ${max_slot_ms} / NULLIF(${average_slot_ms},0) ;;
+    value_format_name: decimal_1
+    drill_fields: [job_level*]
+  }
+
+  # }
 
   set: detail {
     fields: [

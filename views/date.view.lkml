@@ -11,7 +11,7 @@ view: date {
     type: date_time
     datatype: timestamp
     label: "Date Limit"
-    hidden: yes # For use with always_filter
+    #hidden: yes # Hidden for explore-only use with always_filter. Unhidden for ability to select it when linking dsahboard filters to explore filter
     sql: COALESCE({% condition %} ${TABLE} {% endcondition %},TRUE);; # True if null, i.e. applied to a row with no date column
   }
 
@@ -22,11 +22,24 @@ view: date {
     timeframes: [week,date,hour,minute15,minute5,minute,second,millisecond100,raw]
   }
 
-  dimension_group: _parts_of{
+  dimension_group: _parts_of {
     type: time
     datatype: timestamp
     sql: ${TABLE} ;;
     timeframes: [day_of_week, hour_of_day]
+  }
+  dimension_group: _parts_of_ {
+    type: time
+    hidden: yes # This is mainly for use in other dimension definitions
+    datatype: timestamp
+    sql: ${TABLE} ;;
+    timeframes: [day_of_week_index]
+  }
+
+  dimension: date_in_filter_format {
+    hidden: yes # Only for use in LookML
+    type: string
+    sql: FORMAT_DATE("%Y/%m/%d", ${__date});;
   }
 
   dimension_group: current {
@@ -35,7 +48,7 @@ view: date {
     sql: CURRENT_TIMESTAMP() ;;
     hidden: yes # This is mainly for use in other dimension definitions
     timeframes: [week,date,hour,minute15,minute5,minute,second,millisecond100,raw,
-      day_of_week, hour_of_day]
+      day_of_week_index, hour_of_day,]
   }
 
   dimension: days_ago {
@@ -50,7 +63,7 @@ view: date {
     label: "Is WtD?"
     description: "Is week-to-date? Whether the date in question is earlier within its week than the current date. Useful for filtering to comparable parts of the current period and a past period"
     type: yesno
-    sql: ${_parts_of_day_of_week} < ${current_day_of_week}  ;;
+    sql: ${_parts_of__day_of_week_index} < ${current_day_of_week_index}  ;;
   }
 
   dimension: is_dth {

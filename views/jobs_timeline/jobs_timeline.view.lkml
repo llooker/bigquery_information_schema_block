@@ -56,7 +56,7 @@ view: jobs_timeline_base {
     sql: ${TABLE}.job_id ;;
     link: {
       label: "Job Lookup Dashboard"
-      url: "/dashboards/4?Job%20Id={{ value }}&filter_config=%7B%22Job%20Id%22:%5B%7B%22type%22:%22%3D%22,%22values%22:%5B%7B%22constant%22:%22{{ value | encode_uri }}%22%7D,%7B%7D%5D,%22id%22:6%7D%5D%7D"
+      url: "/dashboards-next/bigquery_information_schema::job_lookup_dashboard?Job%20ID={{ value | encode_uri}}&Created={{date.date_in_filter_format | encode_uri}}"
       icon_url: "http://www.looker.com/favicon.ico"
     }
     link: {
@@ -142,31 +142,57 @@ view: jobs_timeline_base {
   measure: job_seconds {
     group_label: "Job Seconds"
     label: "Job Seconds"
-    description: "Number of jobs running x number of seconds they were running. (Max granularity is 1 job second). Useful for understanding job density for non slot-consuming jobs, e.g. pending jobs"
+    description: "Number of jobs running x number of seconds from creation to end. (Max granularity is 1 job second). Useful for understanding job density for non slot-consuming jobs, e.g. pending jobs"
     type: count
     value_format_name: decimal_0
     drill_fields: [detail*]
   }
 
-  measure: job_minutes {
+  measure: job_seconds_running {
     group_label: "Job Seconds"
-    label: "Job Minutes"
-    description: "Job seconds, converted to minutes"
-    type: number
-    sql: 1.0 * ${job_seconds} / 60 ;;
-    value_format_name: decimal_1
+    label: "Job Seconds Running"
+    description: "Number of jobs running x number of seconds that they were running, from creation to start. (Max granularity is 1 job second). Useful for understanding job density for non slot-consuming jobs, e.g. pending jobs"
+    type: count
+    filters: [
+      jobs_timeline.state: "RUNNING"
+    ]
+    value_format_name: decimal_0
     drill_fields: [detail*]
   }
 
-  measure: job_hours {
+  measure: job_seconds_pending {
     group_label: "Job Seconds"
-    label: "Job Hours"
-    description: "Job seconds, converted to hours"
-    type: number
-    sql: 1.0 * ${job_seconds} / 60 / 60;;
-    value_format_name: decimal_1
+    label: "Job Seconds Pending"
+    description: "Number of jobs running x number of seconds that they were pending, from creation to start. (Max granularity is 1 job second). Useful for understanding job density for non slot-consuming jobs, e.g. pending jobs"
+    type: count
+    filters: [
+      jobs_timeline.state: "PENDING"
+    ]
+    value_format_name: decimal_0
     drill_fields: [detail*]
   }
+
+  # Are different units actually helpful? Commenting for now
+  #
+  # measure: job_minutes {
+  #   group_label: "Job Seconds"
+  #   label: "Job Minutes"
+  #   description: "Job seconds, converted to minutes"
+  #   type: number
+  #   sql: 1.0 * ${job_seconds} / 60 ;;
+  #   value_format_name: decimal_1
+  #   drill_fields: [detail*]
+  # }
+
+  # measure: job_hours {
+  #   group_label: "Job Seconds"
+  #   label: "Job Hours"
+  #   description: "Job seconds, converted to hours"
+  #   type: number
+  #   sql: 1.0 * ${job_seconds} / 60 / 60;;
+  #   value_format_name: decimal_1
+  #   drill_fields: [detail*]
+  # }
 
   # }
 

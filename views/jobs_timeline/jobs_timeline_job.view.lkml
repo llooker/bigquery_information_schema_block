@@ -15,7 +15,7 @@ view: jobs_timeline_job {
     link: {
       label: "Job Lookup Dashboard"
       #TODO: Add timestamp filter for performance
-      url: "/dashboards/4?Job%20Id={{ value }}"
+      url: "/dashboards-next/bigquery_information_schema::job_lookup_dashboard?Job%20ID={{ value | encode_uri}}&Created={{date.date_in_filter_format | encode_uri}}"
       icon_url: "http://www.looker.com/favicon.ico"
     }
     link: {

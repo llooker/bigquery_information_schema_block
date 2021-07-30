@@ -4,6 +4,7 @@ include: "/views/jobs/jobs.view.lkml"
 include: "/views/jobs/job_referenced_tables.view.lkml"
 include: "/views/jobs/job_timeline_entries.view.lkml"
 include: "/views/jobs/job_stages.view.lkml"
+include: "/views/jobs/job_stage_steps.view.lkml"
 
 # Joins
 include: "/views/tables.view.lkml"
@@ -15,10 +16,26 @@ include: "/views/dynamic_dts/date_fill.view.lkml"
 include: "/views/date.view.lkml"
 include: "/views/jobs/jobs_dates.view.lkml"
 
+# Aggregate tables
+
 explore: jobs {
   extends: [jobs_base]
   description: "Explore jobs, such as queries. (Scope: @{scope})"
   hidden: no
+
+  aggregate_table: rollup__date___week__project_id {
+    query: {
+      dimensions: [date.__week, project_id]
+      measures: [total_slot_ms, ]
+      filters: [jobs.state: "DONE"]
+      # date.date_filter: "24 weeks ago for 24 weeks",
+    }
+
+    materialization: {
+      persist_for: "24 hours"
+    }
+  }
+
 }
 
 explore: jobs_in_project {
@@ -46,13 +63,9 @@ explore: jobs_base {
 
   always_filter: {
     filters: [
-      jobs.state: "DONE",
-      jobs.job_type: "QUERY",
       date.date_filter: "last 8 days" #Partition column
     ]
   }
-  #TODO: Push down date filter in SQL table name
-  #TODO: Maybe create job id -> timestamp filter mappping table?
 
   join: date_fill {
     type: full_outer
@@ -71,6 +84,7 @@ explore: jobs_base {
   }
 
   join: jobs_dates {
+    view_label: "[Jobs]"
     relationship: one_to_one
     sql:  ;;
   }
@@ -109,7 +123,7 @@ explore: jobs_base {
     relationship: one_to_one
     sql_on:
       ${partition_column.table_name} = ${tables.table_name}
-      AND ${partition_column.is_partitioning_column};;
+      AND ${partition_column.is_partitioning_column} = "YES";;
   }
 
   join: cluster_1_column {
@@ -128,6 +142,21 @@ explore: jobs_base {
     type: left_outer
     sql_on: ${job_join_paths._alias} = 2 ;;
   }
+
+  join: job_stage_steps {
+    view_label: "Job > Stages > Steps"
+    relationship: one_to_many
+    type: left_outer
+    sql: LEFT JOIN UNNEST(job_stages.steps) AS job_stage_steps WITH OFFSET job_stage_steps_offset ;;
+    required_joins: [job_stages]
+  }
+
+#   join: job_stage_step_substeps {
+#     view_label: "Job > Stages > Steps > Substeps"
+#     relationship: one_to_many
+#     type: left_outer
+#     sql: LEFT JOIN UNNEST(job_stage_steps.substeps) AS job_stage_step_substeps WITH OFFSET job_stage_step_substeps_offset ;;
+#   }
 
   join: reservation {
     from: reservations

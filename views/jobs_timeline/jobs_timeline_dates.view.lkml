@@ -8,7 +8,7 @@ view: jobs_timeline_dates {
   measure: average_slots {
     type: number
     sql: ${jobs_timeline.total_slot_seconds} / NULLIF(${date_fill.total_interval_duration_s},0) ;;
-    description: "Average slot usage (Slot Milliseconds divided by period/timerange duration)"
+    description: "Average slot usage, equal to slot milliseconds divided by period/timerange duration. (Note: because this measure relies on a datefill table to calculate the denominator, please make sure any non-date filters include NULL values to successfully calculate this metric)"
     value_format_name: decimal_2
     drill_fields: [jobs_timeline.job_level*]
   }
