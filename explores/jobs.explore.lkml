@@ -23,19 +23,15 @@ explore: jobs {
   description: "Explore jobs, such as queries. (Scope: @{scope})"
   hidden: no
 
-  aggregate_table: rollup__date___week__project_id {
-    query: {
-      dimensions: [date.__week, project_id]
-      measures: [total_slot_ms, ]
-      filters: [jobs.state: "DONE"]
-      # date.date_filter: "24 weeks ago for 24 weeks",
-    }
-
-    materialization: {
-      persist_for: "24 hours"
-    }
-  }
-
+#   aggregate_table: week__project_id {
+#     query: {
+#       dimensions: [date.__week, project_id]
+#       measures: [total_slot_ms, total_processed_tib]
+#       filters: [jobs.state: "DONE"]
+#       timezone: "..."
+#     }
+#     materialization: {sql_trigger_value: SELECT DATE_TRUNC(CURRENT_DATE( {timezone} ), WEEK(SUNDAY)) ;;}
+#   }
 }
 
 explore: jobs_in_project {
