@@ -57,17 +57,67 @@ view: job_stages {
   }
   # }
 
+  dimension: slowest_ms_max {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time (Slowest)"
+    description: "The maximum milliseconds among shards that were spent in one of the following activities: wait, read, compute, write"
+    type: number
+    sql: GREATEST(${wait_ms_max},${read_ms_max},${compute_ms_max},${write_ms_max}) ;;
+  }
+  dimension: slowest_type {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time (Slowest)"
+    description: "The type of activity for which the maximum milliseconds among shards was the highest. One of: Wait, Read, Compute, or Write"
+    type: string
+    sql: CASE GREATEST(${wait_ms_max},${read_ms_max},${compute_ms_max},${write_ms_max})
+          WHEN ${wait_ms_max} THEN 'Wait'
+          WHEN ${read_ms_max} THEN 'Read'
+          WHEN ${compute_ms_max} THEN 'Compute'
+          WHEN ${write_ms_max} THEN 'Write'
+          END
+          ;;
+  }
+  dimension: slowest_skew {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time (Slowest)"
+    description: "The skew (max/avg) among shards for the type of activity with the highest maximum time among shards"
+    type: number
+    value_format_name: decimal_1
+    sql: CASE GREATEST(${wait_ms_max},${read_ms_max},${compute_ms_max},${write_ms_max})
+          WHEN ${wait_ms_max} THEN ${wait_skew}
+          WHEN ${read_ms_max} THEN ${read_skew}
+          WHEN ${compute_ms_max} THEN ${compute_skew}
+          WHEN ${write_ms_max} THEN ${write_skew}
+          END
+          ;;
+  }
+  dimension: slowest_ratio_max {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time (Slowest)"
+    description: "Relative amount of time the slowest shard spent on the slowest type of activity"
+    type: number
+    value_format_name: percent_1
+    sql: CASE GREATEST(${wait_ms_max},${read_ms_max},${compute_ms_max},${write_ms_max})
+          WHEN ${wait_ms_max} THEN ${wait_ratio_max}
+          WHEN ${read_ms_max} THEN ${read_ratio_max}
+          WHEN ${compute_ms_max} THEN ${compute_ratio_max}
+          WHEN ${write_ms_max} THEN ${write_ratio_max}
+          END
+          ;;
+  }
+
   dimension: wait_ratio_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Wait Time"
+    group_label: "Time -    Wait"
     description: "Relative amount of time the average shard spent waiting to be scheduled"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.wait_ratio_avg ;;
   }
 
   dimension: wait_ms_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Wait Time"
+    group_label: "Time -    Wait"
     description: "Milliseconds the average shard spent waiting to be scheduled"
     type: number
     sql: ${TABLE}.wait_ms_avg ;;
@@ -75,15 +125,16 @@ view: job_stages {
 
   dimension: wait_ratio_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Wait Time"
+    group_label: "Time -    Wait"
     description: "Relative amount of time the slowest shard spent waiting to be scheduled"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.wait_ratio_max ;;
   }
 
   dimension: wait_ms_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Wait Time"
+    group_label: "Time -    Wait"
     description: "Milliseconds the slowest shard spent waiting to be scheduled"
     type: number
     sql: ${TABLE}.wait_ms_max ;;
@@ -91,15 +142,25 @@ view: job_stages {
 
   dimension: read_ratio_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Read Time"
+    group_label: "Time -   Read"
     description: "Relative amount of time the average shard spent reading input"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.read_ratio_avg ;;
+  }
+
+  dimension: wait_skew {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time -    Wait"
+    description: "The ratio of the maximum milliseconds spent waiting among shards to the average milliseconds spent waiting among shards. A high skew can indicate an opportunity for optimizations."
+    type: number
+    value_format_name: decimal_1
+    sql: ${wait_ms_max} / NULLIF(${wait_ms_avg},0) ;;
   }
 
   dimension: read_ms_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Read Time"
+    group_label: "Time -   Read"
     description: "Milliseconds the average shard spent reading input"
     type: number
     sql: ${TABLE}.read_ms_avg ;;
@@ -107,31 +168,42 @@ view: job_stages {
 
   dimension: read_ratio_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Read Time"
+    group_label: "Time -   Read"
     description: "Relative amount of time the slowest shard spent reading input"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.read_ratio_max ;;
   }
 
   dimension: read_ms_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Read Time"
+    group_label: "Time -   Read"
     description: "Milliseconds the slowest shard spent reading input"
     type: number
     sql: ${TABLE}.read_ms_max ;;
   }
 
+  dimension: read_skew {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time -   Read"
+    description: "The ratio of the maximum milliseconds spent reading among shards to the average milliseconds spent reading among shards. A high skew can indicate an opportunity for optimizations."
+    type: number
+    value_format_name: decimal_1
+    sql: ${read_ms_max} / NULLIF(${read_ms_avg},0) ;;
+  }
+
   dimension: compute_ratio_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Compute Time"
+    group_label: "Time -  Compute"
     description: "Relative amount of time the average shard spent on CPU-bound tasks"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.compute_ratio_avg ;;
   }
 
   dimension: compute_ms_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Compute Time"
+    group_label: "Time -  Compute"
     description: "Milliseconds the average shard spent on CPU-bound tasks"
     type: number
     sql: ${TABLE}.compute_ms_avg ;;
@@ -139,31 +211,42 @@ view: job_stages {
 
   dimension: compute_ratio_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Compute Time"
+    group_label: "Time -  Compute"
     description: "Relative amount of time the slowest shard spent on CPU-bound tasks"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.compute_ratio_max ;;
   }
 
   dimension: compute_ms_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Compute Time"
+    group_label: "Time -  Compute"
     description: "Milliseconds the slowest shard spent on CPU-bound tasks"
     type: number
     sql: ${TABLE}.compute_ms_max ;;
   }
 
+  dimension: compute_skew {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time -  Compute"
+    description: "The ratio of the maximum milliseconds spent computing among shards to the average milliseconds spent computing among shards. A high skew can indicate an opportunity for optimizations."
+    type: number
+    value_format_name: decimal_1
+    sql: ${compute_ms_max} / NULLIF(${compute_ms_avg},0) ;;
+  }
+
   dimension: write_ratio_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Write Time"
+    group_label: "Time - Write"
     description: "Relative amount of time the average shard spent on writing output"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.write_ratio_avg ;;
   }
 
   dimension: write_ms_avg {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Write Time"
+    group_label: "Time - Write"
     description: "Milliseconds the average shard spent on writing output"
     type: number
     sql: ${TABLE}.write_ms_avg ;;
@@ -171,18 +254,28 @@ view: job_stages {
 
   dimension: write_ratio_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Write Time"
+    group_label: "Time - Write"
     description: "Relative amount of time the slowest shard spent on writing output"
     type: number
+    value_format_name: percent_1
     sql: ${TABLE}.write_ratio_max ;;
   }
 
   dimension: write_ms_max {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
-    group_label: "Write Time"
+    group_label: "Time - Write"
     description: "Milliseconds the slowest shard spent on writing output"
     type: number
     sql: ${TABLE}.write_ms_max ;;
+  }
+
+  dimension: write_skew {
+    hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Time - Write"
+    description: "The ratio of the maximum milliseconds spent writing among shards to the average milliseconds spent writing among shards. A high skew can indicate an opportunity for optimizations."
+    type: number
+    value_format_name: decimal_1
+    sql: ${write_ms_max} / NULLIF(${write_ms_avg},0) ;;
   }
 
   dimension: shuffle_output_bytes {
@@ -203,6 +296,7 @@ view: job_stages {
 
   dimension: records_read {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Records"
     description: "Number of records read into the stage"
     type: number
     sql: ${TABLE}.records_read ;;
@@ -210,6 +304,7 @@ view: job_stages {
 
   dimension: records_written {
     hidden:  no # Usually would prefer measures, but with so many variations, custom measures will have to do for now
+    group_label: "Records"
     description: "Number of records written by the stage"
     type: number
     sql: ${TABLE}.records_written ;;
@@ -225,12 +320,14 @@ view: job_stages {
 
   dimension: parallel_inputs {
     description: "Number of parallel input segments to be processed"
+    group_label: "Parallel Inputs"
     type: number
     sql: ${TABLE}.parallel_inputs ;;
   }
 
   dimension: completed_parallel_inputs {
     description: "Number of parallel input segments completed"
+    group_label: "Parallel Inputs"
     type: number
     sql: ${TABLE}.completed_parallel_inputs ;;
   }
