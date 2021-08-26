@@ -24,7 +24,7 @@ view: jobs_in_project {
         AND creation_time < {% date_end date.date_filter%}
     ;;
   }
-  # TODO: Override query_text dimension to not be dynamic based on scope
+  dimension: query_text { sql: ${query_raw} ;;}
 }
 view: jobs_in_organization{
   extends: [jobs_base]
@@ -36,6 +36,7 @@ view: jobs_in_organization{
         AND creation_time < {% date_end date.date_filter%}
     ;;
   }
+  dimension: query_text { sql: "Query text is only available at PROJECT scope " ;;}
 }
 
 view: jobs_base {
@@ -50,8 +51,6 @@ view: jobs_base {
     sql: ${TABLE}.job_id ;;
     link: {
       label: "Job Lookup Dashboard"
-      #TODO: Promote to LookML Dash link
-      #TODO: also include the creation time value for faster lookup
       url: "/dashboards-next/bigquery_information_schema::job_lookup_dashboard?Job%20ID={{ value | encode_uri}}&Created={{date.date_in_filter_format | encode_uri}}"
       icon_url: "http://www.looker.com/favicon.ico"
     }
@@ -103,12 +102,11 @@ view: jobs_base {
     description: "The email of the BiqQuery user that created the job"
     type: string
     sql: ${TABLE}.user_email ;;
-    link: {
-      label: "User Lookup Dashboard"
-      # TODO: Promote to LookML dashboard
-      url: "/dashboards/15?User={{ value | uri_encode }}"
-      icon_url: "http://www.looker.com/favicon.ico"
-    }
+#     link: {
+#       label: "User Lookup Dashboard"
+#       url: "/dashboards/...?User={{ value | uri_encode }}"
+#       icon_url: "http://www.looker.com/favicon.ico"
+#     }
   }
 
   dimension: job_type_raw {
@@ -506,8 +504,6 @@ view: jobs_base {
   dimension: estimated_billed_bytes {
     # BigQuery bills for a minimum of 10MiB for each table referenced, or 10MiB overall
     # https://cloud.google.com/bigquery/pricing#:~:text=minimum
-    # TODO: Check if the minimum is as the table level or at the job level.
-    #       If at the table level, there may be no 100% accurate way to reconcile the table list with the job-level total bytes billed?
 
     hidden: yes # Use measures instead
     group_label: "Processed Bytes"
