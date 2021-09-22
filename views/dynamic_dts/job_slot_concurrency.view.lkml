@@ -14,7 +14,7 @@ view: job_slot_concurrency {
         stages.slot_ms/NULLIF(stages.end_ms-stages.start_ms,0) as slots
         FROM ${jobs.SQL_TABLE_NAME} as jobs
         LEFT JOIN UNNEST(jobs.job_stages) as stages
-        WHERE jobs.creation_time >= TIMESTAMP_SUB({% date_start date.date_filter %}, INTERVAL @{max_job_lookback})
+        WHERE jobs.creation_time >= TIMESTAMP_SUB({% date_start date.date_filter %}, INTERVAL @{MAX_JOB_LOOKBACK})
           AND jobs.creation_time <= {% date_end date.date_filter %}
           AND jobs.start_time <= {% date_end date.date_filter %}
           AND jobs.end_time   >= {% date_start date.date_filter %}

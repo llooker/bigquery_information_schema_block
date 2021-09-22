@@ -7,7 +7,7 @@
   },
 
     "constants": {
-      "CONNECTION_NAME": {
+      "CONNECTION": {
         "label": "Connection Name",
         "value_constraint": "connection",
         "description": "Enter the name of the Looker connection to use"
@@ -32,7 +32,7 @@
     "models": [
       {
         "name": "bigquery_information_schema",
-        "connection_constant": "CONNECTION_NAME"
+        "connection_constant": "CONNECTION"
       }
     ]
 }

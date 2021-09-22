@@ -1,6 +1,6 @@
 view: reservations {
 
-  sql_table_name: `@{billing_project_id}.region-@{region}.INFORMATION_SCHEMA.RESERVATIONS_BY_PROJECT` ;;
+  sql_table_name: `@{BILLING_PROJECT_ID}.region-@{REGION}.INFORMATION_SCHEMA.RESERVATIONS_BY_PROJECT` ;;
 
   dimension: reservation_name {
     primary_key: yes

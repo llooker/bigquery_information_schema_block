@@ -8,7 +8,7 @@ view: jobs {
   derived_table: {
     sql:
       SELECT *
-      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_@{scope}`
+      FROM `region-@{REGION}.INFORMATION_SCHEMA.JOBS_BY_@{SCOPE}`
       WHERE creation_time >= {% date_start date.date_filter%}
         AND creation_time < {% date_end date.date_filter%}
     ;;
@@ -19,7 +19,7 @@ view: jobs_in_project {
   derived_table: {
     sql:
       SELECT *
-      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_PROJECT`
+      FROM `region-@{REGION}.INFORMATION_SCHEMA.JOBS_BY_PROJECT`
       WHERE creation_time >= {% date_start date.date_filter%}
         AND creation_time < {% date_end date.date_filter%}
     ;;
@@ -31,7 +31,7 @@ view: jobs_in_organization{
   derived_table: {
     sql:
       SELECT *
-      FROM `region-@{region}.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION`
+      FROM `region-@{REGION}.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION`
       WHERE creation_time >= {% date_start date.date_filter%}
         AND creation_time < {% date_end date.date_filter%}
     ;;
@@ -56,7 +56,7 @@ view: jobs_base {
     }
     link: {
       label: "View Query History in BigQuery"
-      url: "https://console.cloud.google.com/bigquery?j=bq:@{region}:{{ value | uri_encode }}&page=queryresults"
+      url: "https://console.cloud.google.com/bigquery?j=bq:@{REGION}:{{ value | uri_encode }}&page=queryresults"
       icon_url: "https://www.gstatic.com/devrel-devsite/prod/vb06d4bce6b32c84cf01c36dffa546f7ea4ff7fc8fcd295737b014c1412e4d118/cloud/images/favicons/onecloud/favicon.ico"
     }
   }
@@ -407,7 +407,7 @@ view: jobs_base {
     description: "SQL query text. Note: Only the PROJECT scope has the query column"
     # The Query Text field is removed from the Jobs by Organization table
     type: string
-    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
       else %} ${query_raw} {% endif %};;
     html:
     <div style="white-space: pre;">{{rendered_value}}
@@ -419,7 +419,7 @@ view: jobs_base {
     description: "First 2000 characters of the SQL query text. Note: Only the PROJECT scope has the query column"
     # The Query Text field is removed from the Jobs by Organization table
     type: string
-    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
       else %} ${query_raw} {% endif %};;
     html:
     <div style="white-space: pre;">{{rendered_value}}
@@ -436,7 +436,7 @@ view: jobs_base {
     description: "The Looker history ID, extracted from the context comment in the SQL query text, if available. Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
       else %} REGEXP_EXTRACT( ${query_raw}, r'"history_id":\s*(\d*)' ) {% endif %};;
   }
 
@@ -446,7 +446,7 @@ view: jobs_base {
     description: "The Looker user ID, extracted from the context comment in the SQL query text, if available. Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
       else %} REGEXP_EXTRACT( ${query_raw}, r'"user_id":\s*(\d*)' ) {% endif %};;
   }
 
@@ -456,7 +456,7 @@ view: jobs_base {
     description: "The Looker instance slug, which identifies the Looker instance that issues the query, extracted from the context comment in the SQL query text, if available. (For clustered Looker deployments, the instance represents the whole cluster, not an individual node.) Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
       else %} REGEXP_EXTRACT( ${query_raw}, r'"instance_slug":\s*"([^"]*)"' ) {% endif %};;
   }
 
@@ -466,7 +466,7 @@ view: jobs_base {
     description: "Whether the current job represents a production PDT build (Prod), a dev-mode PDT build (Dev), or is not a PDT (No)"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{scope}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
       else %} CASE
           WHEN ${query_raw} NOT LIKE '-- Building %'
           THEN 'No'

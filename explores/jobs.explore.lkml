@@ -20,7 +20,7 @@ include: "/views/jobs/jobs_dates.view.lkml"
 
 explore: jobs {
   extends: [jobs_base]
-  description: "Explore jobs, such as queries. (Scope: @{scope})"
+  description: "Explore jobs, such as queries. (Scope: @{SCOPE})"
   hidden: no
 
 #   aggregate_table: week__project_id {

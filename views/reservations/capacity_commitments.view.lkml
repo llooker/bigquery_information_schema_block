@@ -1,6 +1,6 @@
 view: capacity_commitments {
 
-  sql_table_name: `@{billing_project_id}.region-@{region}.INFORMATION_SCHEMA.CAPACITY_COMMITMENTS_BY_PROJECT` ;;
+  sql_table_name: `@{BILLING_PROJECT_ID}.region-@{REGION}.INFORMATION_SCHEMA.CAPACITY_COMMITMENTS_BY_PROJECT` ;;
 
   dimension: capacity_commitment_id {
     type: string

@@ -19,7 +19,7 @@ view: jobs_timeline_job {
     }
     link: {
       label: "View Query History in BigQuery"
-      url: "https://console.cloud.google.com/bigquery?j=bq:@{region}:{{ value }}&page=queryresults"
+      url: "https://console.cloud.google.com/bigquery?j=bq:@{REGION}:{{ value }}&page=queryresults"
       icon_url: "http://www.looker.com/favicon.ico"
     }
   }

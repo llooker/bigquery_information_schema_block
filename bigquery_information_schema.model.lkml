@@ -1,7 +1,7 @@
 ############## BigQuery Performance Monitoring Model #########################
 
 ############## Add the BigQuery Connection that you would like to monitor ######################
-connection: "@{connection}"
+connection: "@{CONNECTION}"
 
 # Temporarily commented out dashboards for validation, fix them at the end once model changes are done
 include: "/**/*.dashboard"

@@ -1,7 +1,7 @@
 view: assignments {
  # An assignement represents the assignment of previously committed and possibly reserved resources to a target project
 
-  sql_table_name: `@{billing_project_id}.region-@{region}.INFORMATION_SCHEMA.ASSIGNMENTS_BY_PROJECT` ;;
+  sql_table_name: `@{BILLING_PROJECT_ID}.region-@{REGION}.INFORMATION_SCHEMA.ASSIGNMENTS_BY_PROJECT` ;;
 
   dimension: assignment_id {
     label: "[ID]"

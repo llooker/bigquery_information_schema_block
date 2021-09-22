@@ -1,5 +1,5 @@
 view: columns {
-  sql_table_name: `region-@{region}.INFORMATION_SCHEMA.COLUMNS` ;;
+  sql_table_name: `region-@{REGION}.INFORMATION_SCHEMA.COLUMNS` ;;
 
   measure: count {
     type: count
