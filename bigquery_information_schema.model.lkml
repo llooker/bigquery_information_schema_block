@@ -3,7 +3,6 @@
 ############## Add the BigQuery Connection that you would like to monitor ######################
 connection: "@{CONNECTION}"
 
-# Temporarily commented out dashboards for validation, fix them at the end once model changes are done
 include: "/**/*.dashboard"
 
 # Multi-purpose "outer join on false" explore
