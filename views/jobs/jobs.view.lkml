@@ -512,7 +512,7 @@ view: jobs_base {
     type:  number
     sql: GREATEST(
       10 * 1024 * 1024,
-      10 * 1024 * 1024 * ARRAY_LENGTH(${referenced_tables_raw},
+      10 * 1024 * 1024 * ARRAY_LENGTH(${referenced_tables_raw}),
       ${processed_bytes}
       )  ;;
   }
