@@ -437,7 +437,7 @@ view: jobs_base {
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
     # Unnest from Labels Method:
-    sql: (SELECT value from UNNEST(${TABLE}.label) as label where label.key = 'looker-context-history_id') ;;
+    sql: (SELECT value from UNNEST(${TABLE}.labels) as label where label.key = 'looker-context-history_id') ;;
     # Regex Method:
     # sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
     #   else %} REGEXP_EXTRACT( ${query_raw}, r'"history_id":\s*(\d*)' ) {% endif %};;
