@@ -433,31 +433,40 @@ view: jobs_base {
   dimension: looker_history_id {
     group_label: "Looker Context"
     label: "Looker History ID"
-    description: "The Looker history ID, extracted from the context comment in the SQL query text, if available. Note: Only available at the PROJECT scope"
+    description: "The Looker history ID, extracted from the context comment in the Labels field, if available. Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
-      else %} REGEXP_EXTRACT( ${query_raw}, r'"history_id":\s*(\d*)' ) {% endif %};;
+    # Unnest from Labels Method:
+    sql: (SELECT value from UNNEST(${TABLE}.label) as label where label.key = 'looker-context-history_id') ;;
+    # Regex Method:
+    # sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    #   else %} REGEXP_EXTRACT( ${query_raw}, r'"history_id":\s*(\d*)' ) {% endif %};;
   }
 
   dimension: looker_user_id {
     group_label: "Looker Context"
     label: "Looker User ID"
-    description: "The Looker user ID, extracted from the context comment in the SQL query text, if available. Note: Only available at the PROJECT scope"
+    description: "The Looker user ID, extracted from the context comment in the Labels field, if available. Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
-      else %} REGEXP_EXTRACT( ${query_raw}, r'"user_id":\s*(\d*)' ) {% endif %};;
+    # Unnest from Labels Method:
+    sql: (SELECT value FROM UNNEST(${TABLE}.labels) as label WHERE label.key = 'looker-context-user_id') ;;
+    # Regex Method:
+    # sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    #   else %} REGEXP_EXTRACT( ${query_raw}, r'"user_id":\s*(\d*)' ) {% endif %};;
   }
 
   dimension: looker_instance_slug {
     group_label: "Looker Context"
     label: "Looker Instance Slug"
-    description: "The Looker instance slug, which identifies the Looker instance that issues the query, extracted from the context comment in the SQL query text, if available. (For clustered Looker deployments, the instance represents the whole cluster, not an individual node.) Note: Only available at the PROJECT scope"
+    description: "The Looker instance slug, which identifies the Looker instance that issues the query, extracted from the context comment in the Labels field, if available. (For clustered Looker deployments, the instance represents the whole cluster, not an individual node.) Note: Only available at the PROJECT scope"
     # https://docs.looker.com/admin-options/server/usage#sql_comments
     type: string
-    sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
-      else %} REGEXP_EXTRACT( ${query_raw}, r'"instance_slug":\s*"([^"]*)"' ) {% endif %};;
+    # Unnest from Labels Method:
+    sql: (SELECT value FROM UNNEST(${TABLE}.labels) as label WHERE label.key = 'looker-context-instance_slug') as instance_slug ;;
+    # Regex Method:
+    # sql:{% if "@{SCOPE}" != "PROJECT"%} "Query text is only available at PROJECT scope " {%
+    #   else %} REGEXP_EXTRACT( ${query_raw}, r'"instance_slug":\s*"([^"]*)"' ) {% endif %};;
   }
 
   dimension: looker_pdt_type {
@@ -489,6 +498,12 @@ view: jobs_base {
     label: "Processed Bytes"
     type: number
     sql: ${TABLE}.total_bytes_processed ;;
+  }
+
+  dimension: total_bytes_billed {
+    type: number
+    label: "Bytes Billed"
+    sql: ${TABLE}.total_bytes_billed ;;
   }
 
   dimension: processed_gib {
@@ -600,6 +615,24 @@ view: jobs_base {
     value_format_name: usd_0
     sql: ${estimated_on_demand_cost} ;;
     drill_fields: [detail*]
+  }
+
+  measure: total_mbytes_billed {
+  type: sum
+  label: "Total MBytes Billed"
+  sql: ${total_bytes_billed} / (1000000) ;;
+  }
+
+  measure: total_gbytes_billed {
+    type: sum
+    label: "Total GiB Billed"
+    sql: ${total_bytes_billed} / (1000000000) ;;
+  }
+
+  measure: total_tb_billed {
+    type: number
+    label: "Total TB Billed"
+    sql: ${total_bytes_billed} / (1000000000000) ;;
   }
 
   # End measure group processed bytes }
