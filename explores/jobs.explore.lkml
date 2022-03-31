@@ -11,6 +11,8 @@ include: "/views/tables.view.lkml"
 include: "/views/columns.view.lkml"
 include: "/views/reservations/reservations.view.lkml"
 include: "/views/dynamic_dts/date_fill.view.lkml"
+include: "/views/reservations/reservations_threshold.view"
+
 
 # Field-only views
 include: "/views/date.view.lkml"
@@ -44,6 +46,13 @@ explore: jobs_in_organization {
   extends: [jobs_base]
   from: jobs_in_organization
   description: "Explore jobs, such as queries. (Scope: ORGANIZATION)"
+
+  join: reservations_threshold {
+    view_label: "Reservation Threshold"
+    type: left_outer
+    relationship: many_to_one
+    sql_on: ${jobs.reservation_id} = ${reservations_threshold.reservation_id} ;;
+  }
 }
 
 

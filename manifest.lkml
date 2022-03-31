@@ -22,6 +22,11 @@ constant: BILLING_PROJECT_ID {
   value: " "
   export: override_optional
 }
+constant: RESERVATION_ADMIN_PROJECT  {
+  # IF Different than Billing Project ID, used when querying RESERVATIONS_BY_<SCOPE> Data
+  value: " "
+  export: override_optional
+}
 
 constant: MAX_JOB_LOOKBACK {
   # The maximum amount of time to look backwards in job data to find jobs that may still be open in a filtered window of slot usage
